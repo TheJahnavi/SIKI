@@ -46,6 +46,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('dist')); // Serve static files from dist folder
 
+// Enhanced error logging middleware
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${new Date().toISOString()} - ${err.message}`);
+  console.error(err.stack);
+  res.status(500).json({ success: false, error: 'Internal server error: ' + err.message });
+});
+
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -96,7 +103,10 @@ app.post('/api/store-product', async (req, res) => {
   try {
     const { product, userId } = req.body;
     
+    console.log(`[STORE-PRODUCT] Storing product for user ${userId || 'anonymous'}`);
+    
     if (!product) {
+      console.warn('[STORE-PRODUCT] No product data provided');
       return res.status(400).json({ success: false, error: 'Product data is required' });
     }
     
@@ -111,10 +121,10 @@ app.post('/api/store-product', async (req, res) => {
     if (db) {
       try {
         const docRef = await db.collection('products').add(productData);
-        console.log('Product stored successfully with ID:', docRef.id);
+        console.log('[STORE-PRODUCT] Product stored successfully with ID:', docRef.id);
         return res.json({ success: true, productId: docRef.id });
       } catch (error) {
-        console.warn('Error storing product in Firestore:', error.message);
+        console.warn('[STORE-PRODUCT] Error storing product in Firestore:', error.message);
         // Continue with mock success
       }
     }
@@ -122,7 +132,7 @@ app.post('/api/store-product', async (req, res) => {
     // Mock success for when Firestore is not available
     res.json({ success: true, productId: 'mock-' + Date.now() });
   } catch (error) {
-    console.error('Store Product API error:', error);
+    console.error('[STORE-PRODUCT] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -132,7 +142,10 @@ app.post('/api/chat-log', async (req, res) => {
   try {
     const { productId, userId, query, response } = req.body;
     
+    console.log(`[CHAT-LOG] Logging chat interaction for product ${productId || 'unknown'}`);
+    
     if (!query || !response) {
+      console.warn('[CHAT-LOG] Query and response are required');
       return res.status(400).json({ success: false, error: 'Query and response are required' });
     }
     
@@ -149,10 +162,10 @@ app.post('/api/chat-log', async (req, res) => {
     if (db) {
       try {
         const docRef = await db.collection('chat_logs').add(chatLogEntry);
-        console.log('Chat log stored successfully with ID:', docRef.id);
+        console.log('[CHAT-LOG] Chat log stored successfully with ID:', docRef.id);
         return res.json({ success: true, logId: docRef.id });
       } catch (error) {
-        console.warn('Error storing chat log in Firestore:', error.message);
+        console.warn('[CHAT-LOG] Error storing chat log in Firestore:', error.message);
         // Continue with mock success
       }
     }
@@ -160,7 +173,7 @@ app.post('/api/chat-log', async (req, res) => {
     // Mock success for when Firestore is not available
     res.json({ success: true, logId: 'mock-' + Date.now() });
   } catch (error) {
-    console.error('Chat Log API error:', error);
+    console.error('[CHAT-LOG] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -168,11 +181,15 @@ app.post('/api/chat-log', async (req, res) => {
 // POST /api/analyze-product - Accept image, run OCR/CV, return product data
 app.post('/api/analyze-product', upload.single('image'), async (req, res) => {
   try {
+    console.log('[ANALYZE-PRODUCT] Starting product analysis');
+    
     if (!req.file) {
+      console.warn('[ANALYZE-PRODUCT] No image file uploaded');
       return res.status(400).json({ success: false, error: 'No image file uploaded' });
     }
 
     const imagePath = req.file.path;
+    console.log('[ANALYZE-PRODUCT] Image uploaded to:', imagePath);
     
     // Generate a unique ID for this image based on its content
     // In a real implementation, you might use a hash of the image content
@@ -183,114 +200,109 @@ app.post('/api/analyze-product', upload.single('image'), async (req, res) => {
       try {
         const doc = await db.collection('productAnalysis').doc(imageId).get();
         if (doc.exists) {
-          console.log('Returning cached analysis result from Firestore');
+          console.log('[ANALYZE-PRODUCT] Returning cached analysis result from Firestore');
           return res.json({ success: true, product: doc.data() });
         }
       } catch (error) {
-        console.warn('Error checking Firestore for cached result:', error.message);
+        console.warn('[ANALYZE-PRODUCT] Error checking Firestore for cached result:', error.message);
       }
     }
     
     // Stage 1: OCR - Product Label Analysis
-    console.log('Starting OCR analysis...');
+    console.log('[ANALYZE-PRODUCT] Starting OCR analysis...');
     const ocrResult = await Tesseract.recognize(
       imagePath,
       'eng',
       { 
-        logger: info => console.log(info),
+        logger: info => console.log('[TESSERACT] OCR Progress:', info),
         // Tesseract configuration for optimal text recognition
         tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:;-()[]{}!@#$%^&*+=/\\|? '
       }
     );
     
     const ocrText = ocrResult.data.text;
-    console.log('OCR Text:', ocrText);
+    console.log('[ANALYZE-PRODUCT] OCR Text:', ocrText);
     
     // Check if OCR found enough text to be useful
     const hasSufficientText = ocrText.trim().length > 50; // Adjust threshold as needed
+    console.log('[ANALYZE-PRODUCT] Sufficient text found:', hasSufficientText);
     
     let productData;
     
     if (hasSufficientText) {
       // Process OCR text to extract product information
+      console.log('[ANALYZE-PRODUCT] Processing OCR text to extract product information');
       productData = analyzeOCRText(ocrText);
     } else {
       // Stage 2: Computer Vision - Fallback Object Classification
-      console.log('Insufficient OCR text, switching to fallback classification...');
+      console.log('[ANALYZE-PRODUCT] Insufficient OCR text, switching to fallback classification...');
       
       // If TensorFlow is available, use it for classification
       if (tf && mobileNetModel) {
-        console.log('Using MobileNet for classification...');
+        console.log('[ANALYZE-PRODUCT] Using MobileNet for classification...');
         
-        // Load image for TensorFlow
-        const imageBuffer = fs.readFileSync(imagePath);
-        const decodedImage = tf.node.decodeImage(imageBuffer, 3);
-        const tensor = decodedImage.expandDims(0);
-        
-        // Classify the image
-        const predictions = await mobileNetModel.classify(tensor);
-        tensor.dispose();
-        decodedImage.dispose();
-        
-        console.log('MobileNet Predictions:', predictions);
-        
-        if (predictions && predictions.length > 0) {
-          // Use the top prediction
-          const topPrediction = predictions[0];
-          const objectName = topPrediction.className.toLowerCase();
+        try {
+          // Load image for TensorFlow
+          const imageBuffer = fs.readFileSync(imagePath);
+          const decodedImage = tf.node.decodeImage(imageBuffer, 3);
+          const tensor = decodedImage.expandDims(0);
           
-          // Get fallback data
-          const fallbackData = getFallbackData(objectName);
+          // Classify the image
+          const predictions = await mobileNetModel.classify(tensor);
+          tensor.dispose();
+          decodedImage.dispose();
           
-          productData = {
-            _id: "fallback-" + Date.now(),
-            name: objectName,
-            score: fallbackData.score,
-            category: fallbackData.type,
-            message: fallbackData.message,
-            nutrition: fallbackData.nutrition,
-            dietary: fallbackData.dietary,
-            allergens: fallbackData.allergens,
-            fallback: true,
-            confidence: topPrediction.probability
-          };
-        } else {
-          // If no predictions, return unknown object
-          const fallbackData = getFallbackData("unknown");
+          console.log('[ANALYZE-PRODUCT] MobileNet Predictions:', predictions);
           
-          productData = {
-            _id: "fallback-" + Date.now(),
-            name: "Unknown Object",
-            score: fallbackData.score,
-            category: fallbackData.type,
-            message: fallbackData.message,
-            nutrition: fallbackData.nutrition,
-            dietary: fallbackData.dietary,
-            allergens: fallbackData.allergens,
-            fallback: true
-          };
+          if (predictions && predictions.length > 0) {
+            // Use the top prediction
+            const topPrediction = predictions[0];
+            const objectName = topPrediction.className.toLowerCase();
+            console.log('[ANALYZE-PRODUCT] Top prediction:', objectName);
+            
+            // Get fallback data
+            const fallbackData = getFallbackData(objectName);
+            console.log('[ANALYZE-PRODUCT] Fallback data:', fallbackData);
+            
+            productData = {
+              _id: "fallback-" + Date.now(),
+              name: objectName,
+              score: fallbackData.score,
+              category: fallbackData.type,
+              message: fallbackData.message,
+              nutrition: fallbackData.nutrition,
+              dietary: fallbackData.dietary,
+              allergens: fallbackData.allergens,
+              fallback: true,
+              confidence: topPrediction.probability
+            };
+          } else {
+            // If no predictions, return unknown object
+            console.log('[ANALYZE-PRODUCT] No predictions found, using unknown fallback');
+            const fallbackData = getFallbackData("unknown");
+            
+            productData = {
+              _id: "fallback-" + Date.now(),
+              name: "Unknown Object",
+              score: fallbackData.score,
+              category: fallbackData.type,
+              message: fallbackData.message,
+              nutrition: fallbackData.nutrition,
+              dietary: fallbackData.dietary,
+              allergens: fallbackData.allergens,
+              fallback: true
+            };
+          }
+        } catch (cvError) {
+          console.error('[ANALYZE-PRODUCT] Error in computer vision processing:', cvError);
+          // Fallback to simulated classification
+          console.log('[ANALYZE-PRODUCT] Using simulated classification due to CV error');
+          productData = getSimulatedClassification();
         }
       } else {
         // If TensorFlow is not available, use simulated classification
-        console.log('Using simulated classification...');
-        
-        // Simulate a random classification result
-        const objectTypes = Object.keys(fallbackDB);
-        const randomObject = objectTypes[Math.floor(Math.random() * objectTypes.length)];
-        const fallbackData = fallbackDB[randomObject];
-        
-        productData = {
-          _id: "fallback-" + Date.now(),
-          name: randomObject,
-          score: fallbackData.score,
-          category: fallbackData.type,
-          message: fallbackData.message,
-          nutrition: fallbackData.nutrition,
-          dietary: fallbackData.dietary,
-          allergens: fallbackData.allergens,
-          fallback: true,
-          simulated: true
-        };
+        console.log('[ANALYZE-PRODUCT] Using simulated classification...');
+        productData = getSimulatedClassification();
       }
     }
     
@@ -305,29 +317,66 @@ app.post('/api/analyze-product', upload.single('image'), async (req, res) => {
           analyzedAt: db ? db.FieldValue.serverTimestamp() : new Date(),
           imagePath: imagePath
         });
-        console.log('Analysis result saved to Firestore');
+        console.log('[ANALYZE-PRODUCT] Analysis result saved to Firestore');
       } catch (error) {
-        console.warn('Error saving analysis result to Firestore:', error.message);
+        console.warn('[ANALYZE-PRODUCT] Error saving analysis result to Firestore:', error.message);
       }
     }
     
     // Return the product data
+    console.log('[ANALYZE-PRODUCT] Analysis completed successfully');
     return res.json({ success: true, product: productData, productId: imageId });
   } catch (error) {
-    console.error('Analyze Product API error:', error);
-    res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
+    console.error('[ANALYZE-PRODUCT] API error:', error);
+    res.status(500).json({ success: false, error: 'Analysis failed: ' + error.message });
+  } finally {
+    // Clean up the uploaded file
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+        console.log('[ANALYZE-PRODUCT] Temporary file cleaned up:', req.file.path);
+      } catch (cleanupError) {
+        console.warn('[ANALYZE-PRODUCT] Error cleaning up temporary file:', cleanupError.message);
+      }
+    }
   }
 });
+
+// Function to simulate classification (fallback when CV fails)
+function getSimulatedClassification() {
+  console.log('[SIMULATION] Using simulated classification');
+  
+  // Simulate a random classification result
+  const objectTypes = Object.keys(fallbackDB);
+  const randomObject = objectTypes[Math.floor(Math.random() * objectTypes.length)];
+  const fallbackData = fallbackDB[randomObject];
+  
+  return {
+    _id: "fallback-" + Date.now(),
+    name: randomObject,
+    score: fallbackData.score,
+    category: fallbackData.type,
+    message: fallbackData.message,
+    nutrition: fallbackData.nutrition,
+    dietary: fallbackData.dietary,
+    allergens: fallbackData.allergens,
+    fallback: true,
+    simulated: true
+  };
+}
 
 // Function to analyze OCR text and extract product information
 function analyzeOCRText(rawText) {
   try {
+    console.log('[OCR-ANALYSIS] Analyzing OCR text');
+    
     // This is a simplified implementation
     // In a real application, you would use more sophisticated NLP techniques
     
     // Extract potential product name (first line or capitalized words)
     const lines = rawText.trim().split('\n').filter(line => line.trim().length > 0);
     const productName = lines[0] || 'Unknown Product';
+    console.log('[OCR-ANALYSIS] Product name extracted:', productName);
     
     // Simple keyword-based categorization
     const keywords = rawText.toLowerCase();
@@ -347,6 +396,8 @@ function analyzeOCRText(rawText) {
       category = 'Supplement';
       score = 60;
     }
+    
+    console.log('[OCR-ANALYSIS] Category:', category, 'Score:', score);
     
     // Extract potential ingredients (lines with commas or common ingredient words)
     const ingredients = [];
@@ -395,7 +446,7 @@ function analyzeOCRText(rawText) {
       });
     });
     
-    return {
+    const result = {
       _id: "ocr-" + Date.now(),
       name: productName,
       score: score,
@@ -406,8 +457,11 @@ function analyzeOCRText(rawText) {
       dietary: dietary,
       fallback: false
     };
+    
+    console.log('[OCR-ANALYSIS] Analysis result:', result);
+    return result;
   } catch (error) {
-    console.error('Error analyzing OCR text:', error);
+    console.error('[OCR-ANALYSIS] Error analyzing OCR text:', error);
     // Return a safe fallback response
     return {
       _id: "ocr-error-" + Date.now(),
@@ -430,7 +484,10 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { productId, query, userId } = req.body;
     
+    console.log(`[CHAT] Processing chat request for product ${productId || 'unknown'} from user ${userId || 'anonymous'}`);
+    
     if (!query) {
+      console.warn('[CHAT] Query is required');
       return res.status(400).json({ success: false, error: 'Query is required' });
     }
     
@@ -441,9 +498,12 @@ app.post('/api/chat', async (req, res) => {
         const doc = await db.collection('productAnalysis').doc(productId).get();
         if (doc.exists) {
           productData = doc.data();
+          console.log('[CHAT] Product data retrieved from Firestore');
+        } else {
+          console.warn('[CHAT] Product not found in Firestore');
         }
       } catch (error) {
-        console.warn('Error retrieving product data from Firestore:', error.message);
+        console.warn('[CHAT] Error retrieving product data from Firestore:', error.message);
       }
     }
     
@@ -454,9 +514,12 @@ app.post('/api/chat', async (req, res) => {
         const doc = await db.collection('userPreferences').doc(userId).get();
         if (doc.exists) {
           userPreferences = doc.data();
+          console.log('[CHAT] User preferences retrieved from Firestore');
+        } else {
+          console.warn('[CHAT] User preferences not found in Firestore');
         }
       } catch (error) {
-        console.warn('Error retrieving user preferences from Firestore:', error.message);
+        console.warn('[CHAT] Error retrieving user preferences from Firestore:', error.message);
       }
     }
     
@@ -478,7 +541,7 @@ app.post('/api/chat', async (req, res) => {
         
         prompt += "USER QUESTION:\n" + query;
         
-        console.log('Sending prompt to Hugging Face:', prompt);
+        console.log('[CHAT] Sending prompt to Hugging Face:', prompt.substring(0, 100) + '...');
         
         // Try to use Hugging Face API
         let response;
@@ -495,17 +558,19 @@ app.post('/api/chat', async (req, res) => {
           });
           
           aiResponse = response.generated_text || 'I apologize, but I couldn\'t generate a response at the moment.';
+          console.log('[CHAT] Hugging Face response received');
         } catch (hfError) {
           // If Hugging Face fails, fall back to enhanced template responses
-          console.warn('Hugging Face API error:', hfError.message);
+          console.warn('[CHAT] Hugging Face API error:', hfError.message);
           aiResponse = generateEnhancedResponse(productData, userPreferences, query);
         }
       } catch (error) {
-        console.warn('Error in chat processing:', error.message);
+        console.warn('[CHAT] Error in chat processing:', error.message);
         aiResponse = generateEnhancedResponse(productData, userPreferences, query);
       }
     } else {
       // Fallback simulation if no API key is provided
+      console.log('[CHAT] Using template-based response (no API key)');
       aiResponse = generateEnhancedResponse(productData, userPreferences, query);
     }
     
@@ -521,28 +586,32 @@ app.post('/api/chat', async (req, res) => {
         };
         
         await db.collection('chatHistory').add(chatEntry);
-        console.log('Chat interaction saved to Firestore');
+        console.log('[CHAT] Chat interaction saved to Firestore');
       } catch (error) {
-        console.warn('Error saving chat interaction to Firestore:', error.message);
+        console.warn('[CHAT] Error saving chat interaction to Firestore:', error.message);
       }
     }
     
     res.json({ success: true, reply: aiResponse });
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('[CHAT] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
 
 // Enhanced response generation function
 function generateEnhancedResponse(productData, userPreferences, query) {
+  console.log('[RESPONSE-GENERATION] Generating enhanced response');
+  
   // Create a more intelligent response based on available data
   if (!productData) {
+    console.log('[RESPONSE-GENERATION] No product data available');
     return "I don't have product information available to answer your question. Please analyze a product first.";
   }
   
   // Handle empty or invalid product data
   if (!productData.name || productData.name === "Unknown Product") {
+    console.log('[RESPONSE-GENERATION] Invalid product data');
     return "I couldn't properly analyze this product. Please try scanning it again with better lighting and focus.";
   }
   
@@ -690,7 +759,9 @@ function generateEnhancedResponse(productData, userPreferences, query) {
     `For ${productData.name}, I recommend checking the ingredients list for any additives or preservatives, and reviewing the nutrition facts for calories, sugar, and sodium content.`
   ]
   
-  return responses[Math.floor(Math.random() * responses.length)];
+  const response = responses[Math.floor(Math.random() * responses.length)];
+  console.log('[RESPONSE-GENERATION] Generated response:', response);
+  return response;
 }
 
 // POST /api/user-preferences - Set user dietary preferences
@@ -698,7 +769,10 @@ app.post('/api/user-preferences', async (req, res) => {
   try {
     const { userId, preferences } = req.body;
     
+    console.log(`[USER-PREFERENCES] Saving preferences for user ${userId}`);
+    
     if (!userId || !preferences) {
+      console.warn('[USER-PREFERENCES] User ID and preferences are required');
       return res.status(400).json({ success: false, error: 'User ID and preferences are required' });
     }
     
@@ -709,16 +783,16 @@ app.post('/api/user-preferences', async (req, res) => {
           ...preferences,
           updatedAt: db ? db.FieldValue.serverTimestamp() : new Date()
         });
-        console.log('User preferences saved to Firestore');
+        console.log('[USER-PREFERENCES] User preferences saved to Firestore');
       } catch (error) {
-        console.warn('Error saving user preferences to Firestore:', error.message);
+        console.warn('[USER-PREFERENCES] Error saving user preferences to Firestore:', error.message);
         return res.status(500).json({ success: false, error: 'Failed to save preferences' });
       }
     }
     
     res.json({ success: true, message: 'Preferences saved successfully' });
   } catch (error) {
-    console.error('User Preferences API error:', error);
+    console.error('[USER-PREFERENCES] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -728,7 +802,10 @@ app.get('/api/user-preferences/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
+    console.log(`[USER-PREFERENCES] Retrieving preferences for user ${userId}`);
+    
     if (!userId) {
+      console.warn('[USER-PREFERENCES] User ID is required');
       return res.status(400).json({ success: false, error: 'User ID is required' });
     }
     
@@ -739,16 +816,19 @@ app.get('/api/user-preferences/:userId', async (req, res) => {
         const doc = await db.collection('userPreferences').doc(userId).get();
         if (doc.exists) {
           preferences = doc.data();
+          console.log('[USER-PREFERENCES] User preferences retrieved from Firestore');
+        } else {
+          console.log('[USER-PREFERENCES] No preferences found for user');
         }
       } catch (error) {
-        console.warn('Error retrieving user preferences from Firestore:', error.message);
+        console.warn('[USER-PREFERENCES] Error retrieving user preferences from Firestore:', error.message);
         return res.status(500).json({ success: false, error: 'Failed to retrieve preferences' });
       }
     }
     
     res.json({ success: true, preferences });
   } catch (error) {
-    console.error('User Preferences API error:', error);
+    console.error('[USER-PREFERENCES] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -756,6 +836,8 @@ app.get('/api/user-preferences/:userId', async (req, res) => {
 // GET /api/history - Return recent scans
 app.get('/api/history', async (req, res) => {
   try {
+    console.log('[HISTORY] Retrieving recent scans');
+    
     // In a real implementation with Firestore, you would:
     // 1. Query the database for user's scan history
     let history = [];
@@ -771,13 +853,15 @@ app.get('/api/history', async (req, res) => {
           id: doc.id,
           ...doc.data()
         }));
+        console.log('[HISTORY] Retrieved history from Firestore');
       } catch (error) {
-        console.warn('Error retrieving history from Firestore:', error.message);
+        console.warn('[HISTORY] Error retrieving history from Firestore:', error.message);
       }
     }
     
     // If no Firestore data, return mock history
     if (history.length === 0) {
+      console.log('[HISTORY] Using mock history data');
       history = [
         {
           _id: "1",
@@ -796,7 +880,7 @@ app.get('/api/history', async (req, res) => {
     
     res.json({ success: true, history: history });
   } catch (error) {
-    console.error('History API error:', error);
+    console.error('[HISTORY] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -805,6 +889,8 @@ app.get('/api/history', async (req, res) => {
 app.post('/api/report-missing', async (req, res) => {
   try {
     const { productName, imageUrl } = req.body;
+    
+    console.log(`[REPORT-MISSING] Reporting missing product: ${productName}`);
     
     // In a real implementation with Firestore, you would:
     // 1. Store report in database
@@ -818,15 +904,15 @@ app.post('/api/report-missing', async (req, res) => {
         };
         
         await db.collection('missingProducts').add(reportEntry);
-        console.log(`Missing product reported and saved to Firestore: ${productName}`);
+        console.log(`[REPORT-MISSING] Missing product reported and saved to Firestore: ${productName}`);
       } catch (error) {
-        console.warn('Error saving missing product report to Firestore:', error.message);
+        console.warn('[REPORT-MISSING] Error saving missing product report to Firestore:', error.message);
       }
     }
     
     res.json({ success: true, message: 'Product reported successfully' });
   } catch (error) {
-    console.error('Report missing API error:', error);
+    console.error('[REPORT-MISSING] API error:', error);
     res.status(500).json({ success: false, error: 'Internal server error: ' + error.message });
   }
 });
@@ -841,7 +927,16 @@ module.exports = app;
 
 // Start server only if this file is run directly
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`SIKI server running on http://localhost:${PORT}`);
+  });
+  
+  // Graceful shutdown
+  process.on('SIGINT', () => {
+    console.log('Shutting down server...');
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
   });
 }

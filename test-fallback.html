@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallback Modal Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/modal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background-color: #00BCD4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #0097A7;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Fallback Modal Test</h1>
+        <p>This page tests the fallback modal implementation.</p>
+        
+        <button class="test-button" onclick="testShowModal()">Show Fallback Modal</button>
+        <button class="test-button" onclick="testCustomMessage()">Show Custom Message</button>
+        <button class="test-button" onclick="testHideModal()">Hide Modal</button>
+        
+        <!-- Fallback Message Modal -->
+        <div id="fallbackModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Oops! Something went wrong</h2>
+                <p>We couldn't analyze this item. Try scanning a clearer image or select a product manually.</p>
+                <div class="modal-actions">
+                    <button id="retryButton" class="modal-button primary">Retry</button>
+                    <button id="closeFallbackModal" class="modal-button secondary">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple test functions
+        function testShowModal() {
+            const fallbackModal = document.getElementById('fallbackModal');
+            if (fallbackModal) {
+                fallbackModal.classList.remove('hidden');
+                console.log('Fallback modal displayed');
+            }
+        }
+        
+        function testCustomMessage() {
+            const fallbackModal = document.getElementById('fallbackModal');
+            if (fallbackModal) {
+                const messageElement = fallbackModal.querySelector('p');
+                if (messageElement) {
+                    messageElement.textContent = "This is a custom test message for the fallback modal.";
+                }
+                fallbackModal.classList.remove('hidden');
+                console.log('Fallback modal displayed with custom message');
+            }
+        }
+        
+        function testHideModal() {
+            const fallbackModal = document.getElementById('fallbackModal');
+            if (fallbackModal) {
+                fallbackModal.classList.add('hidden');
+                console.log('Fallback modal hidden');
+            }
+        }
+        
+        // Set up event listeners for modal buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeFallbackModal = document.getElementById('closeFallbackModal');
+            const retryButton = document.getElementById('retryButton');
+            
+            if (closeFallbackModal) {
+                closeFallbackModal.addEventListener('click', function() {
+                    testHideModal();
+                    console.log('Close button clicked');
+                });
+            }
+            
+            if (retryButton) {
+                retryButton.addEventListener('click', function() {
+                    testHideModal();
+                    console.log('Retry button clicked - would retry analysis here');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -47,6 +47,11 @@ const cancelPreferences = document.querySelector('.cancel-button');
 const savePreferences = document.querySelector('.save-button');
 const preferenceChips = document.querySelectorAll('.preference-chip');
 
+// Fallback Modal Elements
+const fallbackModal = document.getElementById('fallbackModal');
+const closeFallbackModal = document.getElementById('closeFallbackModal');
+const retryButton = document.getElementById('retryButton');
+
 // State variables
 let selectedImages = [];
 let currentTheme = 'light';
@@ -57,6 +62,7 @@ let currentUserId = 'user-' + Date.now(); // In a real app, this would come from
 let unsubscribeHistory = null; // For real-time updates
 let unsubscribeChat = null; // For real-time updates
 let mediaStream = null; // For camera stream
+let lastAnalysisAttempt = null; // To track the last analysis attempt
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
@@ -176,6 +182,10 @@ function setupEventListeners() {
     preferenceChips.forEach(chip => {
         chip.addEventListener('click', togglePreference);
     });
+    
+    // Fallback modal
+    closeFallbackModal.addEventListener('click', hideFallbackModal);
+    retryButton.addEventListener('click', retryAnalysis);
     
     // Set up real-time listeners when on result page
     resultPage.addEventListener('DOMSubtreeModified', setupRealTimeListeners);
@@ -447,26 +457,63 @@ function updateAnalyzeButtonState() {
     }
 }
 
+// Show fallback modal
+function showFallbackModal(message = "We couldn't analyze this item. Try scanning a clearer image or select a product manually.") {
+    const messageElement = fallbackModal.querySelector('p');
+    if (messageElement) {
+        messageElement.textContent = message;
+    }
+    fallbackModal.classList.remove('hidden');
+}
+
+// Hide fallback modal
+function hideFallbackModal() {
+    fallbackModal.classList.add('hidden');
+}
+
+// Retry analysis
+function retryAnalysis() {
+    hideFallbackModal();
+    if (lastAnalysisAttempt) {
+        analyzeImages(lastAnalysisAttempt);
+    }
+}
+
 // Analyze images using OCR and computer vision
-async function analyzeImages() {
-    if (selectedImages.length === 0) return;
+async function analyzeImages(imageFile = null) {
+    // Store the attempt for potential retry
+    lastAnalysisAttempt = imageFile || (selectedImages.length > 0 ? selectedImages[0] : null);
+    
+    const imageToAnalyze = imageFile || (selectedImages.length > 0 ? selectedImages[0] : null);
+    
+    if (!imageToAnalyze) {
+        showFallbackModal("No image selected for analysis. Please capture or select an image first.");
+        return;
+    }
     
     // Show loading state
+    const originalButtonText = analyzeButton.innerHTML;
     analyzeButton.innerHTML = '<span class="material-icons">hourglass_empty</span>';
     analyzeButton.classList.add('disabled');
     
     try {
         // In a real implementation, we would send the image to the backend
         const formData = new FormData();
-        formData.append('image', selectedImages[0]);
+        formData.append('image', imageToAnalyze);
+        
+        console.log('Sending image for analysis...');
         
         const response = await fetch('/api/analyze-product', {
             method: 'POST',
             body: formData
         });
         
+        console.log('Analysis response status:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('Analysis response data:', data);
+            
             if (data.success) {
                 // Process the response
                 processProductData(data.product);
@@ -475,17 +522,20 @@ async function analyzeImages() {
                 // Log the product analysis to the backend
                 await logProductAnalysis(data.product);
             } else {
-                alert('Analysis failed. Please try again.');
+                console.error('Analysis failed with message:', data.error);
+                showFallbackModal(data.error || "Analysis failed. Please try again with a clearer image.");
             }
         } else {
-            alert('Analysis failed. Please try again.');
+            const errorText = await response.text();
+            console.error('Analysis failed with HTTP error:', response.status, errorText);
+            showFallbackModal(`Analysis failed (${response.status}). Please try again.`);
         }
     } catch (error) {
-        console.error('Analysis failed:', error);
-        alert('Analysis failed. Please try again.');
+        console.error('Analysis failed with exception:', error);
+        showFallbackModal("Analysis failed due to a network error. Please check your connection and try again.");
     } finally {
         // Reset button
-        analyzeButton.innerHTML = '<span>ANALYZE</span><span class="material-icons">send</span>';
+        analyzeButton.innerHTML = originalButtonText;
         analyzeButton.classList.remove('disabled');
     }
 }
@@ -728,7 +778,7 @@ async function logChatInteraction(query, response) {
 
 // Navigate to result page
 function navigateToResultPage() {
-    if (selectedImages.length > 0) {
+    if (selectedImages.length > 0 || lastAnalysisAttempt) {
         homePage.classList.remove('active');
         resultPage.classList.add('active');
         // Set up real-time listeners when navigating to result page

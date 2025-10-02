@@ -93,6 +93,8 @@ SIKI/
 │   ├── deployment-guide.md
 │   ├── enhanced-features-summary.md
 │   ├── enhancement-summary.md
+│   ├── fallback-modal-implementation.md
+│   ├── fallback-modal-summary.md
 │   ├── firebase-integration-summary.md
 │   ├── firebase-security-rules.md
 │   ├── firestore-integration.md
@@ -103,6 +105,7 @@ SIKI/
 │   ├── project-structure.md
 │   ├── real-time-updates.md
 │   ├── test-product-label.txt
+│   ├── testing-fallback-modal.md
 │   └── user-preferences-feature.md
 ├── tests/
 │   └── app.test.js
@@ -437,6 +440,12 @@ The application includes comprehensive documentation to support development, tes
 - **Launch Announcement**: [Launch Announcement Template](docs/launch-announcement.md)
 - **Demo Walkthrough**: [Demo Walkthrough Guide](docs/demo-walkthrough.md)
 - **User Feedback**: [User Feedback Template](docs/user-feedback-template.md)
+
+### Fallback Modal Implementation
+- **Implementation Details**: [Fallback Modal Implementation](docs/fallback-modal-implementation.md)
+- **Implementation Summary**: [Fallback Modal Summary](docs/fallback-modal-summary.md)
+- **Testing Guide**: [Testing Fallback Modal](docs/testing-fallback-modal.md)
+- **Test the UI**: Open `test-fallback.html` in your browser
 
 Refer to [Testing Documentation](docs/testing-readme.md) for more details.
 
