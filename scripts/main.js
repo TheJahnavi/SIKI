@@ -45,6 +45,8 @@ const previewContainer = document.querySelector('.preview-container');
 const backButton = document.getElementById('back-button');
 const expansionPanels = document.querySelectorAll('.expansion-panel');
 const cameraViewport = document.querySelector('.camera-viewport');
+const cameraStream = document.getElementById('camera-stream');
+const captureCanvas = document.getElementById('capture-canvas');
 
 // Preferences Modal Elements
 const preferencesModal = document.getElementById('preferences-modal');
@@ -70,13 +72,62 @@ let unsubscribeChat = null; // For real-time updates
 let mediaStream = null; // For camera stream
 let lastAnalysisAttempt = null; // To track the last analysis attempt
 
+// Check if camera is working properly
+function checkCameraStatus() {
+    const video = cameraViewport.querySelector('video');
+    if (video) {
+        // Check if video is actually playing
+        if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+            console.log('Camera is working properly');
+            return true;
+        } else {
+            console.warn('Camera video is not ready');
+            return false;
+        }
+    } else {
+        console.warn('No video element found in camera viewport');
+        return false;
+    }
+}
+
+// Periodically check camera status
+function startCameraStatusCheck() {
+    setInterval(() => {
+        if (mediaStream) {
+            checkCameraStatus();
+        }
+    }, 5000); // Check every 5 seconds
+}
+
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded');
+    
+    // Check if we're in a secure context
+    if (!isSecureContext) {
+        console.warn('Not in a secure context. Camera access may be restricted.');
+        // Show a warning to the user
+        setTimeout(() => {
+            if (cameraViewport) {
+                const placeholder = cameraViewport.querySelector('.camera-placeholder');
+                if (placeholder) {
+                    const instruction = placeholder.querySelector('.camera-instruction');
+                    if (instruction) {
+                        instruction.innerHTML += '<br><br><strong>Note:</strong> Camera requires HTTPS or localhost. You may need to serve this app locally.';
+                    }
+                }
+            }
+        }, 1000);
+    }
+    
     initializeTheme();
     setupEventListeners();
     loadUserPreferences();
     loadRecentScans();
     initializeCamera();
+    
+    // Start checking camera status
+    startCameraStatusCheck();
     
     // Handle initial page routing based on URL
     handleInitialRouting();
@@ -111,10 +162,26 @@ function updateTheme() {
 // Initialize camera
 async function initializeCamera() {
     try {
+        console.log('Initializing camera...');
+        
         // Check if we're on a secure context (HTTPS or localhost)
         if (!isSecureContext) {
             console.warn('Camera access requires secure context (HTTPS or localhost)');
+            showCameraPermissionMessage('Camera access requires HTTPS or localhost environment. Try using a local server or HTTPS.');
             return;
+        }
+        
+        // Check if mediaDevices API is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.warn('MediaDevices API not supported');
+            showCameraPermissionMessage('Camera not supported in this browser. Please try a modern browser like Chrome or Firefox.');
+            return;
+        }
+        
+        // Stop any existing stream
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
         }
         
         // Get camera stream
@@ -127,92 +194,225 @@ async function initializeCamera() {
             audio: false
         };
         
+        console.log('Requesting camera access with constraints:', constraints);
         mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('Camera access granted');
         
-        // Create video element for camera preview
-        const video = document.createElement('video');
-        video.style.width = '100%';
-        video.style.height = '100%';
-        video.style.objectFit = 'cover';
-        video.autoplay = true;
-        video.playsInline = true;
-        video.srcObject = mediaStream;
+        // Set the video stream to the camera-stream element
+        cameraStream.srcObject = mediaStream;
+        cameraStream.style.display = 'block';
         
         // Replace camera placeholder with video element
         const cameraPlaceholder = cameraViewport.querySelector('.camera-placeholder');
         if (cameraPlaceholder) {
             cameraViewport.removeChild(cameraPlaceholder);
         }
-        cameraViewport.appendChild(video);
+        
+        // Show the camera stream in the viewport
+        cameraStream.style.width = '100%';
+        cameraStream.style.height = '100%';
+        cameraStream.style.objectFit = 'cover';
+        cameraStream.autoplay = true;
+        cameraStream.playsInline = true;
+        cameraViewport.appendChild(cameraStream);
         
         console.log('Camera initialized successfully');
     } catch (error) {
         console.error('Error accessing camera:', error);
+        let errorMessage = 'Camera access denied. Please check browser permissions and try again.';
+        
+        // Provide more specific error messages
+        if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera access was denied. Please allow camera permissions when prompted.';
+        } else if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
+            errorMessage = 'No camera found or camera not compatible with requested constraints.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = 'Camera is already in use by another application.';
+        } else if (error.name === 'AbortError') {
+            errorMessage = 'Camera access was interrupted. Please try again.';
+        }
+        
+        showCameraPermissionMessage(errorMessage);
         // Keep the placeholder if camera access fails
+    }
+}
+
+// Function to show camera permission message
+function showCameraPermissionMessage(message) {
+    // Remove any existing video element
+    if (cameraStream.parentNode === cameraViewport) {
+        cameraViewport.removeChild(cameraStream);
+    }
+    
+    const cameraPlaceholder = cameraViewport.querySelector('.camera-placeholder') || 
+                             cameraViewport.appendChild(document.createElement('div'));
+    cameraPlaceholder.className = 'camera-placeholder';
+    cameraPlaceholder.innerHTML = `
+        <span class="material-icons">photo_camera</span>
+        <p>Point your camera at a product</p>
+        <p class="camera-instruction">${message}</p>
+        <button id="retry-camera" class="retry-button">Retry Camera Access</button>
+        <p class="camera-instruction">Or use the gallery button to select an image</p>
+    `;
+    
+    // Add event listener to retry button
+    const retryButton = cameraPlaceholder.querySelector('#retry-camera');
+    if (retryButton) {
+        retryButton.addEventListener('click', function() {
+            console.log('Retry camera access button clicked');
+            initializeCamera();
+        });
     }
 }
 
 // Set up all event listeners
 function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     // Theme toggle
-    themeToggle.addEventListener('click', toggleTheme);
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        console.log('Theme toggle event listener added');
+    } else {
+        console.warn('Theme toggle element not found');
+    }
     
     // Preferences button
-    preferencesButton.addEventListener('click', openPreferences);
+    if (preferencesButton) {
+        preferencesButton.addEventListener('click', openPreferences);
+        console.log('Preferences button event listener added');
+    } else {
+        console.warn('Preferences button element not found');
+    }
     
     // Camera switch
-    cameraSwitch.addEventListener('click', toggleCamera);
+    if (cameraSwitch) {
+        cameraSwitch.addEventListener('click', toggleCamera);
+        console.log('Camera switch event listener added');
+    } else {
+        console.warn('Camera switch element not found');
+    }
     
     // Gallery button
-    galleryButton.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
+    if (galleryButton && fileInput) {
+        galleryButton.addEventListener('click', () => {
+            console.log('Gallery button clicked');
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', handleFileSelect);
+        console.log('Gallery button and file input event listeners added');
+    } else {
+        console.warn('Gallery button or file input element not found');
+    }
     
     // Camera button
-    cameraButton.addEventListener('click', captureAndAddImage);
+    if (cameraButton) {
+        cameraButton.addEventListener('click', captureAndAddImage);
+        console.log('Camera button event listener added');
+    } else {
+        console.warn('Camera button element not found');
+    }
     
     // Analyze button
-    analyzeButton.addEventListener('click', analyzeImages);
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', () => analyzeImages());
+        console.log('Analyze button event listener added');
+    } else {
+        console.warn('Analyze button element not found');
+    }
     
     // Back button
-    backButton.addEventListener('click', navigateToHomePage);
+    if (backButton) {
+        backButton.addEventListener('click', navigateToHomePage);
+        console.log('Back button event listener added');
+    } else {
+        console.warn('Back button element not found');
+    }
     
     // Expansion panels
-    expansionPanels.forEach(panel => {
-        const header = panel.querySelector('.panel-header');
-        header.addEventListener('click', () => toggleExpansionPanel(panel));
-    });
+    if (expansionPanels && expansionPanels.length > 0) {
+        expansionPanels.forEach((panel, index) => {
+            const header = panel.querySelector('.panel-header');
+            if (header) {
+                header.addEventListener('click', () => toggleExpansionPanel(panel));
+                console.log(`Expansion panel ${index} event listener added`);
+            } else {
+                console.warn(`Expansion panel ${index} header not found`);
+            }
+        });
+    } else {
+        console.warn('No expansion panels found');
+    }
     
     // Chat input
     const chatInput = document.querySelector('.outlined-text-field');
     const sendButton = document.querySelector('.send-button');
     if (chatInput && sendButton) {
-        sendButton.addEventListener('click', () => sendChatMessage(chatInput.value));
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        sendButton.addEventListener('click', () => {
+            if (chatInput.value.trim()) {
                 sendChatMessage(chatInput.value);
+                chatInput.value = '';
             }
         });
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && chatInput.value.trim()) {
+                sendChatMessage(chatInput.value);
+                chatInput.value = '';
+            }
+        });
+        console.log('Chat input event listeners added');
+    } else {
+        console.warn('Chat input or send button not found');
     }
     
     // Preferences modal
-    closePreferences.addEventListener('click', closePreferencesModal);
-    cancelPreferences.addEventListener('click', closePreferencesModal);
-    savePreferences.addEventListener('click', saveUserPreferences);
+    if (closePreferences) {
+        closePreferences.addEventListener('click', closePreferencesModal);
+    } else {
+        console.warn('Close preferences element not found');
+    }
+    if (cancelPreferences) {
+        cancelPreferences.addEventListener('click', closePreferencesModal);
+    } else {
+        console.warn('Cancel preferences element not found');
+    }
+    if (savePreferences) {
+        savePreferences.addEventListener('click', saveUserPreferences);
+    } else {
+        console.warn('Save preferences element not found');
+    }
     
     // Preference chips
-    preferenceChips.forEach(chip => {
-        chip.addEventListener('click', togglePreference);
-    });
+    if (preferenceChips && preferenceChips.length > 0) {
+        preferenceChips.forEach((chip, index) => {
+            chip.addEventListener('click', togglePreference);
+        });
+        console.log('Preference chips event listeners added');
+    } else {
+        console.warn('No preference chips found');
+    }
     
     // Fallback modal
-    closeFallbackModal.addEventListener('click', hideFallbackModal);
-    retryButton.addEventListener('click', retryAnalysis);
+    if (closeFallbackModal) {
+        closeFallbackModal.addEventListener('click', hideFallbackModal);
+    } else {
+        console.warn('Close fallback modal element not found');
+    }
+    if (retryButton) {
+        retryButton.addEventListener('click', retryAnalysis);
+    } else {
+        console.warn('Retry button element not found');
+    }
     
     // Set up real-time listeners when on result page
-    resultPage.addEventListener('DOMSubtreeModified', setupRealTimeListeners);
+    if (resultPage) {
+        resultPage.addEventListener('DOMSubtreeModified', setupRealTimeListeners);
+    }
     
     // Handle browser back/forward navigation
     window.addEventListener('popstate', handleBrowserNavigation);
+    
+    console.log('All event listeners set up');
 }
 
 // Handle browser navigation (back/forward buttons)
@@ -228,12 +428,16 @@ function toggleTheme() {
 
 // Open preferences modal
 function openPreferences() {
-    preferencesModal.classList.add('active');
+    if (preferencesModal) {
+        preferencesModal.classList.add('active');
+    }
 }
 
 // Close preferences modal
 function closePreferencesModal() {
-    preferencesModal.classList.remove('active');
+    if (preferencesModal) {
+        preferencesModal.classList.remove('active');
+    }
 }
 
 // Toggle preference selection
@@ -340,53 +544,102 @@ function setupRealTimeListeners() {
 function toggleCamera() {
     isFrontCamera = !isFrontCamera;
     const cameraIcon = cameraSwitch.querySelector('.material-icons');
-    cameraIcon.textContent = isFrontCamera ? 'flip_camera_ios' : 'flip_camera_android';
+    if (cameraIcon) {
+        cameraIcon.textContent = isFrontCamera ? 'flip_camera_ios' : 'flip_camera_android';
+    }
     
     // Restart camera with new constraints
     if (mediaStream) {
         // Stop current stream
-        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream.getTracks().forEach(track => {
+            console.log('Stopping track:', track.kind);
+            track.stop();
+        });
+        mediaStream = null;
     }
     
-    // Initialize camera with new constraints
-    initializeCamera();
+    // Clear the camera viewport
+    while (cameraViewport.firstChild) {
+        cameraViewport.removeChild(cameraViewport.firstChild);
+    }
+    
+    // Show placeholder while initializing
+    const placeholder = document.createElement('div');
+    placeholder.className = 'camera-placeholder';
+    placeholder.innerHTML = `
+        <span class="material-icons">photo_camera</span>
+        <p>Switching camera...</p>
+        <p class="camera-instruction">Please wait</p>
+    `;
+    cameraViewport.appendChild(placeholder);
+    
+    // Initialize camera with new constraints after a short delay
+    setTimeout(() => {
+        initializeCamera();
+    }, 500);
     
     console.log(`Switched to ${isFrontCamera ? 'front' : 'back'} camera`);
 }
 
 // Handle file selection from gallery
 function handleFileSelect(event) {
+    console.log('File selected:', event.target.files);
     const files = event.target.files;
-    if (files.length > 0) {
-        // Add each selected file to the preview
-        for (let i = 0; i < files.length; i++) {
-            addImageToPreview(files[i]);
+    if (files && files.length > 0) {
+        // Validate file types
+        const validFiles = Array.from(files).filter(file => {
+            const isValidType = file.type.startsWith('image/');
+            if (!isValidType) {
+                console.warn('Invalid file type selected:', file.name, file.type);
+            }
+            return isValidType;
+        });
+        
+        if (validFiles.length === 0) {
+            alert('Please select valid image files (JPEG, PNG, etc.)');
+            return;
         }
+        
+        // Add each selected file to the preview
+        validFiles.forEach(file => {
+            addImageToPreview(file);
+        });
         updateAnalyzeButtonState();
+    } else {
+        console.log('No files selected');
     }
 }
 
 // Capture image from camera
 async function captureImageFromCamera() {
     try {
-        const video = cameraViewport.querySelector('video');
-        if (!video) {
-            throw new Error('No video element found');
+        // Check if we have a camera stream
+        if (!cameraStream.srcObject) {
+            throw new Error('No camera stream available. Camera may not be initialized properly.');
         }
         
-        // Create canvas to capture image
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Check if video is actually playing
+        if (cameraStream.readyState < 2) { // HAVE_CURRENT_DATA
+            throw new Error('Camera is not ready yet. Please wait for camera to initialize.');
+        }
         
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Set canvas dimensions to match video
+        captureCanvas.width = cameraStream.videoWidth;
+        captureCanvas.height = cameraStream.videoHeight;
+        
+        // Draw the current video frame to the canvas
+        const ctx = captureCanvas.getContext('2d');
+        ctx.drawImage(cameraStream, 0, 0, captureCanvas.width, captureCanvas.height);
         
         // Convert canvas to blob
-        return new Promise((resolve) => {
-            canvas.toBlob((blob) => {
-                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                resolve(file);
+        return new Promise((resolve, reject) => {
+            captureCanvas.toBlob((blob) => {
+                if (blob) {
+                    const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    resolve(file);
+                } else {
+                    reject(new Error('Failed to create image from camera'));
+                }
             }, 'image/jpeg', 0.9);
         });
     } catch (error) {
@@ -397,12 +650,19 @@ async function captureImageFromCamera() {
 
 // Capture image from camera and add to preview
 async function captureAndAddImage() {
+    console.log('Capture button clicked');
     try {
         const imageFile = await captureImageFromCamera();
-        addImageToPreview(imageFile);
-        updateAnalyzeButtonState();
+        if (imageFile) {
+            addImageToPreview(imageFile);
+            updateAnalyzeButtonState();
+        } else {
+            throw new Error('Failed to capture image from camera');
+        }
     } catch (error) {
         console.error('Error capturing image:', error);
+        // Show error to user
+        alert('Failed to capture image. Please try again or select an image from your gallery.');
         // Fallback to simulated capture
         simulateCameraCapture();
     }
@@ -410,6 +670,7 @@ async function captureAndAddImage() {
 
 // Simulate camera capture (fallback)
 function simulateCameraCapture() {
+    console.log('Simulating camera capture');
     // In a real app, this would capture an image from the camera
     // For demo purposes, we'll create a placeholder
     const placeholderImage = new File([], 'camera-capture.jpg', { type: 'image/jpeg' });
@@ -419,10 +680,13 @@ function simulateCameraCapture() {
 
 // Add image to preview bar
 function addImageToPreview(file) {
+    console.log('Adding image to preview:', file);
     selectedImages.push(file);
     
     // Show the preview bar
-    imagePreviewBar.classList.add('active');
+    if (imagePreviewBar) {
+        imagePreviewBar.classList.add('active');
+    }
     
     // Create thumbnail element
     const thumbnail = document.createElement('div');
@@ -456,19 +720,26 @@ function addImageToPreview(file) {
     thumbnail.appendChild(closeIcon);
     
     // Add thumbnail to container
-    previewContainer.appendChild(thumbnail);
+    if (previewContainer) {
+        previewContainer.appendChild(thumbnail);
+    }
+    
+    console.log('Image added to preview');
 }
 
 // Remove image from preview
 function removeImage(thumbnailElement, index) {
+    console.log('Removing image from preview');
     // Remove from array
     selectedImages.splice(index, 1);
     
     // Remove from DOM
-    thumbnailElement.remove();
+    if (thumbnailElement) {
+        thumbnailElement.remove();
+    }
     
     // Hide preview bar if no images
-    if (selectedImages.length === 0) {
+    if (selectedImages.length === 0 && imagePreviewBar) {
         imagePreviewBar.classList.remove('active');
     }
     
@@ -477,27 +748,36 @@ function removeImage(thumbnailElement, index) {
 
 // Update analyze button state based on selected images
 function updateAnalyzeButtonState() {
-    if (selectedImages.length > 0) {
-        analyzeButton.classList.remove('disabled');
-        analyzeButton.disabled = false;
-    } else {
-        analyzeButton.classList.add('disabled');
-        analyzeButton.disabled = true;
+    console.log('Updating analyze button state. Selected images:', selectedImages.length);
+    if (analyzeButton) {
+        if (selectedImages.length > 0) {
+            analyzeButton.classList.remove('disabled');
+            analyzeButton.disabled = false;
+            console.log('Analyze button enabled');
+        } else {
+            analyzeButton.classList.add('disabled');
+            analyzeButton.disabled = true;
+            console.log('Analyze button disabled');
+        }
     }
 }
 
 // Show fallback modal
 function showFallbackModal(message = "We couldn't analyze this item. Try scanning a clearer image or select a product manually.") {
-    const messageElement = fallbackModal.querySelector('p');
+    const messageElement = fallbackModal ? fallbackModal.querySelector('p') : null;
     if (messageElement) {
         messageElement.textContent = message;
     }
-    fallbackModal.classList.remove('hidden');
+    if (fallbackModal) {
+        fallbackModal.classList.remove('hidden');
+    }
 }
 
 // Hide fallback modal
 function hideFallbackModal() {
-    fallbackModal.classList.add('hidden');
+    if (fallbackModal) {
+        fallbackModal.classList.add('hidden');
+    }
 }
 
 // Retry analysis
@@ -510,6 +790,8 @@ function retryAnalysis() {
 
 // Analyze images using OCR and computer vision
 async function analyzeImages(imageFile = null) {
+    console.log('Analyzing images...');
+    
     // Store the attempt for potential retry
     lastAnalysisAttempt = imageFile || (selectedImages.length > 0 ? selectedImages[0] : null);
     
@@ -521,9 +803,13 @@ async function analyzeImages(imageFile = null) {
     }
     
     // Show loading state
-    const originalButtonText = analyzeButton.innerHTML;
-    analyzeButton.innerHTML = '<span class="material-icons">hourglass_empty</span>';
-    analyzeButton.classList.add('disabled');
+    let originalButtonText = '';
+    if (analyzeButton) {
+        originalButtonText = analyzeButton.innerHTML;
+        analyzeButton.innerHTML = '<span class="material-icons">hourglass_empty</span> Analyzing...';
+        analyzeButton.classList.add('disabled');
+        analyzeButton.disabled = true;
+    }
     
     try {
         // In a real implementation, we would send the image to the backend
@@ -531,6 +817,11 @@ async function analyzeImages(imageFile = null) {
         formData.append('image', imageToAnalyze);
         
         console.log('Sending image for analysis...');
+        
+        // Check if we have a valid API URL
+        if (!API_BASE_URL || API_BASE_URL === 'undefined') {
+            throw new Error('API base URL is not configured properly');
+        }
         
         const response = await fetch(`${API_BASE_URL}/api/analyze-product`, {
             method: 'POST',
@@ -557,15 +848,36 @@ async function analyzeImages(imageFile = null) {
         } else {
             const errorText = await response.text();
             console.error('Analysis failed with HTTP error:', response.status, errorText);
-            showFallbackModal(`Analysis failed (${response.status}). Please try again.`);
+            
+            let errorMessage = `Analysis failed (${response.status}). Please try again.`;
+            if (response.status === 404) {
+                errorMessage = "Analysis service not found. Please check if the backend is running.";
+            } else if (response.status === 500) {
+                errorMessage = "Server error occurred. Please try again later.";
+            } else if (response.status === 0) {
+                errorMessage = "Network error. Please check your connection and try again.";
+            }
+            
+            showFallbackModal(errorMessage);
         }
     } catch (error) {
         console.error('Analysis failed with exception:', error);
-        showFallbackModal("Analysis failed due to a network error. Please check your connection and try again.");
+        
+        let errorMessage = "Analysis failed due to a network error. Please check your connection and try again.";
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            errorMessage = "Could not connect to the analysis service. Please make sure the backend server is running.";
+        } else if (error.name === 'AbortError') {
+            errorMessage = "Analysis request timed out. Please try again.";
+        }
+        
+        showFallbackModal(errorMessage);
     } finally {
         // Reset button
-        analyzeButton.innerHTML = originalButtonText;
-        analyzeButton.classList.remove('disabled');
+        if (analyzeButton) {
+            analyzeButton.innerHTML = originalButtonText;
+            analyzeButton.classList.remove('disabled');
+            analyzeButton.disabled = false;
+        }
     }
 }
 
@@ -721,7 +1033,9 @@ async function sendChatMessage(message) {
     const chatBubbleContainer = document.querySelector('.panel-content');
     
     // Clear input
-    chatInput.value = '';
+    if (chatInput) {
+        chatInput.value = '';
+    }
     
     // Add user message to chat
     const userBubble = document.createElement('div');
@@ -731,7 +1045,9 @@ async function sendChatMessage(message) {
     userBubble.style.marginBottom = '10px';
     userBubble.style.textAlign = 'right';
     userBubble.innerHTML = `<p>${message}</p>`;
-    chatBubbleContainer.appendChild(userBubble);
+    if (chatBubbleContainer) {
+        chatBubbleContainer.appendChild(userBubble);
+    }
     
     try {
         // Send message to backend
@@ -755,10 +1071,14 @@ async function sendChatMessage(message) {
                 aiBubble.className = 'chat-bubble';
                 aiBubble.style.marginBottom = '10px';
                 aiBubble.innerHTML = `<p>${data.reply}</p>`;
-                chatBubbleContainer.appendChild(aiBubble);
+                if (chatBubbleContainer) {
+                    chatBubbleContainer.appendChild(aiBubble);
+                }
                 
                 // Scroll to bottom
-                chatBubbleContainer.scrollTop = chatBubbleContainer.scrollHeight;
+                if (chatBubbleContainer) {
+                    chatBubbleContainer.scrollTop = chatBubbleContainer.scrollHeight;
+                }
                 
                 // Log chat interaction
                 await logChatInteraction(message, data.reply);
@@ -774,7 +1094,9 @@ async function sendChatMessage(message) {
         errorBubble.className = 'chat-bubble';
         errorBubble.style.marginBottom = '10px';
         errorBubble.innerHTML = `<p>Sorry, I couldn't process your request. Please try again.</p>`;
-        chatBubbleContainer.appendChild(errorBubble);
+        if (chatBubbleContainer) {
+            chatBubbleContainer.appendChild(errorBubble);
+        }
     }
 }
 
@@ -807,7 +1129,8 @@ async function logChatInteraction(query, response) {
 
 // Navigate to result page
 function navigateToResultPage() {
-    if (selectedImages.length > 0 || lastAnalysisAttempt || currentProduct) {
+    console.log('Navigating to result page');
+    if ((selectedImages.length > 0 || lastAnalysisAttempt || currentProduct) && homePage && resultPage) {
         homePage.classList.remove('active');
         resultPage.classList.add('active');
         // Update URL for SPA routing
@@ -819,12 +1142,15 @@ function navigateToResultPage() {
 
 // Navigate to home page
 function navigateToHomePage() {
-    resultPage.classList.remove('active');
-    homePage.classList.add('active');
-    // Update URL for SPA routing
-    window.location.hash = '';
-    // Clean up real-time listeners when leaving result page
-    cleanupRealTimeListeners();
+    console.log('Navigating to home page');
+    if (homePage && resultPage) {
+        resultPage.classList.remove('active');
+        homePage.classList.add('active');
+        // Update URL for SPA routing
+        window.location.hash = '';
+        // Clean up real-time listeners when leaving result page
+        cleanupRealTimeListeners();
+    }
 }
 
 // Clean up real-time listeners
@@ -842,12 +1168,16 @@ function cleanupRealTimeListeners() {
 // Toggle expansion panel
 function toggleExpansionPanel(panel) {
     // Close all other panels
-    expansionPanels.forEach(p => {
-        if (p !== panel) {
-            p.classList.remove('active');
-        }
-    });
+    if (expansionPanels) {
+        expansionPanels.forEach(p => {
+            if (p !== panel) {
+                p.classList.remove('active');
+            }
+        });
+    }
     
     // Toggle current panel
-    panel.classList.toggle('active');
+    if (panel) {
+        panel.classList.toggle('active');
+    }
 }

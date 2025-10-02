@@ -66,6 +66,10 @@
             <!-- Camera Viewport -->
             <div class="camera-viewport">
                 <div class="scanning-line"></div>
+                <!-- Hidden video element for camera stream -->
+                <video id="camera-stream" autoplay playsinline style="display: none;"></video>
+                <!-- Hidden canvas for image capture -->
+                <canvas id="capture-canvas" style="display: none;"></canvas>
                 <div class="camera-placeholder">
                     <span class="material-icons">photo_camera</span>
                     <p>Point your camera at a product</p>
