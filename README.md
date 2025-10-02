@@ -418,14 +418,25 @@ This repository contains placeholder files for sensitive credentials:
 - Use environment-specific configuration files
 - Never log sensitive information
 
-## Testing
+## Documentation
 
-The application includes comprehensive testing documentation and automated tests:
+The application includes comprehensive documentation to support development, testing, and deployment:
 
+### Testing Documentation
 - **Manual Testing Checklist**: See [Testing and Enhancement Guide](docs/testing-and-enhancement-guide.md)
 - **Bug Reporting**: Use the [Bug Report Template](docs/bug-report-template.md)
 - **Unit Tests**: Run with `npm test`
 - **End-to-End Tests**: Run with `npm run test:e2e`
+
+### User Experience Documentation
+- **Accessibility Testing**: [Accessibility Testing Guide](docs/accessibility-testing-guide.md)
+- **Performance Testing**: [Performance Testing Guide](docs/performance-testing-guide.md)
+- **Security Testing**: [Security Testing Guide](docs/security-testing-guide.md)
+
+### Launch and Marketing Documentation
+- **Launch Announcement**: [Launch Announcement Template](docs/launch-announcement.md)
+- **Demo Walkthrough**: [Demo Walkthrough Guide](docs/demo-walkthrough.md)
+- **User Feedback**: [User Feedback Template](docs/user-feedback-template.md)
 
 Refer to [Testing Documentation](docs/testing-readme.md) for more details.
 

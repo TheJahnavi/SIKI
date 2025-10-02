@@ -1,6 +1,6 @@
 // Service Worker for SIKI App
 
-const CACHE_NAME = 'siki-cache-v1';
+const CACHE_NAME = 'siki-cache-v2';
 const urlsToCache = [
   '/',
   '/styles/main.css',
@@ -21,65 +21,151 @@ self.addEventListener('install', event => {
   );
 });
 
-// Cache and network race
+// Enhanced fetch event handler with better caching strategies
 self.addEventListener('fetch', event => {
-  // Handle image requests
+  // Handle API requests with network-first strategy
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache successful API responses
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open('siki-api-cache').then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Return cached response if available
+          return caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            
+            // Return fallback data when offline
+            const url = new URL(event.request.url);
+            
+            // Handle different API endpoints with specific fallbacks
+            if (url.pathname === '/api/analyze-product' && event.request.method === 'POST') {
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  product: FALLBACK_DATA.products[0],
+                  productId: 'offline-' + Date.now()
+                }),
+                {
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            }
+            
+            if (url.pathname === '/api/chat') {
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  reply: "I'm currently offline. I can provide general health information about products when you're back online."
+                }),
+                {
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            }
+            
+            if (url.pathname === '/api/history') {
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  history: FALLBACK_DATA.products.slice(0, 5)
+                }),
+                {
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            }
+            
+            // Generic fallback for other API requests
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'Network error - offline mode'
+              }),
+              {
+                headers: { 'Content-Type': 'application/json' },
+                status: 503
+              }
+            );
+          });
+        })
+    );
+    return;
+  }
+  
+  // Handle image requests with cache-first strategy
   if (event.request.destination === 'image') {
     event.respondWith(
-      caches.open('siki-images-v1').then((cache) => {
-        return cache.match(event.request).then((response) => {
-          const networkFetch = fetch(event.request).then((networkResponse) => {
-            cache.put(event.request, networkResponse.clone());
+      caches.open('siki-images-v1').then(cache => {
+        return cache.match(event.request).then(response => {
+          // Return cached response if available
+          if (response) {
+            return response;
+          }
+          
+          // Otherwise fetch from network and cache
+          return fetch(event.request).then(networkResponse => {
+            if (networkResponse.ok) {
+              cache.put(event.request, networkResponse.clone());
+            }
             return networkResponse;
           });
-          
-          // Return cached response if available, otherwise fetch from network
-          return response || networkFetch;
         });
       })
     );
     return;
   }
   
-  // Handle document, script, and style requests
+  // Handle document, script, and style requests with stale-while-revalidate
   if (event.request.destination === 'document' || 
       event.request.destination === 'script' || 
       event.request.destination === 'style') {
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(event.request).then((response) => {
-          const networkFetch = fetch(event.request).then((networkResponse) => {
-            cache.put(event.request, networkResponse.clone());
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          // Fetch from network in background to update cache
+          const networkFetch = fetch(event.request).then(networkResponse => {
+            if (networkResponse.ok) {
+              cache.put(event.request, networkResponse.clone());
+            }
             return networkResponse;
           });
           
-          // Return cached response if available, otherwise fetch from network
-          return response || networkFetch;
+          // Return cached response if available, otherwise wait for network
+          return cachedResponse || networkFetch;
         });
       })
     );
     return;
   }
   
-  // Handle API requests
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        // Return fallback data when offline
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Network error - offline mode'
-          }),
-          {
-            headers: { 'Content-Type': 'application/json' },
-            status: 503
-          }
-        );
+  // For all other requests, try network first, then cache
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Cache successful responses
+        if (response.ok) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
       })
-    );
-    return;
-  }
+      .catch(() => {
+        // Return cached response if available
+        return caches.match(event.request);
+      })
+  );
 });
 
 // Offline fallback data
@@ -94,8 +180,11 @@ const FALLBACK_DATA = {
       nutrition: {
         calories: '95 per medium apple',
         sugar: '19g',
-        fiber: '4g'
+        fiber: '4g',
+        protein: '1g'
       },
+      ingredients: ['Apple'],
+      allergens: [],
       dietary: ['vegan', 'gluten-free', 'keto-friendly in moderation']
     },
     {
@@ -107,36 +196,31 @@ const FALLBACK_DATA = {
       nutrition: {
         calories: '105 per medium banana',
         sugar: '14g',
-        fiber: '3g'
+        fiber: '3g',
+        protein: '1g'
       },
+      ingredients: ['Banana'],
+      allergens: [],
       dietary: ['vegan', 'gluten-free']
+    },
+    {
+      id: 'offline-orange',
+      name: 'Orange',
+      score: 85,
+      category: 'Raw Food',
+      message: 'High in vitamin C and fiber. Supports immune system.',
+      nutrition: {
+        calories: '62 per medium orange',
+        sugar: '12g',
+        fiber: '3g',
+        protein: '1g'
+      },
+      ingredients: ['Orange'],
+      allergens: [],
+      dietary: ['vegan', 'gluten-free', 'keto-friendly in moderation']
     }
   ]
 };
-
-// Handle offline product requests
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  
-  // For product analysis requests when offline
-  if (url.pathname === '/api/analyze-product' && event.request.method === 'POST') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        // Return fallback data when offline
-        return new Response(
-          JSON.stringify({
-            success: true,
-            product: FALLBACK_DATA.products[0],
-            productId: 'offline-' + Date.now()
-          }),
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      })
-    );
-  }
-});
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {
@@ -144,7 +228,9 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== 'siki-images-v1') {
+          if (cacheName !== CACHE_NAME && 
+              cacheName !== 'siki-images-v1' && 
+              cacheName !== 'siki-api-cache') {
             return caches.delete(cacheName);
           }
         })

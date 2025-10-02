@@ -321,90 +321,108 @@ app.post('/api/analyze-product', upload.single('image'), async (req, res) => {
 
 // Function to analyze OCR text and extract product information
 function analyzeOCRText(rawText) {
-  // This is a simplified implementation
-  // In a real application, you would use more sophisticated NLP techniques
-  
-  // Extract potential product name (first line or capitalized words)
-  const lines = rawText.trim().split('\n').filter(line => line.trim().length > 0);
-  const productName = lines[0] || 'Unknown Product';
-  
-  // Simple keyword-based categorization
-  const keywords = rawText.toLowerCase();
-  let category = 'Unknown';
-  let score = 50; // Default neutral score
-  
-  if (keywords.includes('organic') || keywords.includes('natural')) {
-    category = 'Organic Food';
-    score = 80;
-  } else if (keywords.includes('sugar') || keywords.includes('sweet')) {
-    category = 'Snack';
-    score = 30;
-  } else if (keywords.includes('water') || keywords.includes('beverage')) {
-    category = 'Beverage';
-    score = 70;
-  } else if (keywords.includes('vitamin') || keywords.includes('supplement')) {
-    category = 'Supplement';
-    score = 60;
+  try {
+    // This is a simplified implementation
+    // In a real application, you would use more sophisticated NLP techniques
+    
+    // Extract potential product name (first line or capitalized words)
+    const lines = rawText.trim().split('\n').filter(line => line.trim().length > 0);
+    const productName = lines[0] || 'Unknown Product';
+    
+    // Simple keyword-based categorization
+    const keywords = rawText.toLowerCase();
+    let category = 'Unknown';
+    let score = 50; // Default neutral score
+    
+    if (keywords.includes('organic') || keywords.includes('natural')) {
+      category = 'Organic Food';
+      score = 80;
+    } else if (keywords.includes('sugar') || keywords.includes('sweet')) {
+      category = 'Snack';
+      score = 30;
+    } else if (keywords.includes('water') || keywords.includes('beverage')) {
+      category = 'Beverage';
+      score = 70;
+    } else if (keywords.includes('vitamin') || keywords.includes('supplement')) {
+      category = 'Supplement';
+      score = 60;
+    }
+    
+    // Extract potential ingredients (lines with commas or common ingredient words)
+    const ingredients = [];
+    lines.forEach(line => {
+      if (line.includes(',') || line.toLowerCase().includes('ingredient')) {
+        ingredients.push(...line.split(',').map(item => item.trim()));
+      }
+    });
+    
+    // Extract nutrition info (lines with numbers and common nutrition words)
+    const nutrition = {};
+    lines.forEach(line => {
+      if (line.match(/\d+/) && (line.toLowerCase().includes('calorie') || 
+          line.toLowerCase().includes('sugar') || 
+          line.toLowerCase().includes('fat'))) {
+        const parts = line.split(':');
+        if (parts.length === 2) {
+          const key = parts[0].trim().toLowerCase();
+          const value = parts[1].trim();
+          nutrition[key] = value;
+        }
+      }
+    });
+    
+    // Extract potential allergens
+    const allergens = [];
+    const allergenKeywords = ['milk', 'eggs', 'fish', 'shellfish', 'tree nuts', 'peanuts', 'wheat', 'soybeans'];
+    lines.forEach(line => {
+      const lineLower = line.toLowerCase();
+      allergenKeywords.forEach(allergen => {
+        if (lineLower.includes(allergen)) {
+          allergens.push(allergen);
+        }
+      });
+    });
+    
+    // Extract dietary information
+    const dietary = [];
+    const dietaryKeywords = ['vegan', 'vegetarian', 'gluten-free', 'keto-friendly', 'organic', 'non-gmo'];
+    lines.forEach(line => {
+      const lineLower = line.toLowerCase();
+      dietaryKeywords.forEach(diet => {
+        if (lineLower.includes(diet)) {
+          dietary.push(diet);
+        }
+      });
+    });
+    
+    return {
+      _id: "ocr-" + Date.now(),
+      name: productName,
+      score: score,
+      category: category,
+      nutrition: Object.keys(nutrition).length > 0 ? nutrition : { calories: 'N/A', sugar: 'N/A' },
+      ingredients: ingredients.length > 0 ? ingredients.map(name => ({ name, risk: 'unknown' })) : [{ name: 'Unknown', risk: 'unknown' }],
+      allergens: allergens,
+      dietary: dietary,
+      fallback: false
+    };
+  } catch (error) {
+    console.error('Error analyzing OCR text:', error);
+    // Return a safe fallback response
+    return {
+      _id: "ocr-error-" + Date.now(),
+      name: "Analysis Error",
+      score: 0,
+      category: "Error",
+      message: "Failed to analyze product text. Please try again with a clearer image.",
+      nutrition: { calories: 'N/A', sugar: 'N/A' },
+      ingredients: [{ name: 'Unknown', risk: 'unknown' }],
+      allergens: [],
+      dietary: [],
+      fallback: true,
+      error: error.message
+    };
   }
-  
-  // Extract potential ingredients (lines with commas or common ingredient words)
-  const ingredients = [];
-  lines.forEach(line => {
-    if (line.includes(',') || line.toLowerCase().includes('ingredient')) {
-      ingredients.push(...line.split(',').map(item => item.trim()));
-    }
-  });
-  
-  // Extract nutrition info (lines with numbers and common nutrition words)
-  const nutrition = {};
-  lines.forEach(line => {
-    if (line.match(/\d+/) && (line.toLowerCase().includes('calorie') || 
-        line.toLowerCase().includes('sugar') || 
-        line.toLowerCase().includes('fat'))) {
-      const parts = line.split(':');
-      if (parts.length === 2) {
-        const key = parts[0].trim().toLowerCase();
-        const value = parts[1].trim();
-        nutrition[key] = value;
-      }
-    }
-  });
-  
-  // Extract potential allergens
-  const allergens = [];
-  const allergenKeywords = ['milk', 'eggs', 'fish', 'shellfish', 'tree nuts', 'peanuts', 'wheat', 'soybeans'];
-  lines.forEach(line => {
-    const lineLower = line.toLowerCase();
-    allergenKeywords.forEach(allergen => {
-      if (lineLower.includes(allergen)) {
-        allergens.push(allergen);
-      }
-    });
-  });
-  
-  // Extract dietary information
-  const dietary = [];
-  const dietaryKeywords = ['vegan', 'vegetarian', 'gluten-free', 'keto-friendly', 'organic', 'non-gmo'];
-  lines.forEach(line => {
-    const lineLower = line.toLowerCase();
-    dietaryKeywords.forEach(diet => {
-      if (lineLower.includes(diet)) {
-        dietary.push(diet);
-      }
-    });
-  });
-  
-  return {
-    _id: "ocr-" + Date.now(),
-    name: productName,
-    score: score,
-    category: category,
-    nutrition: Object.keys(nutrition).length > 0 ? nutrition : { calories: 'N/A', sugar: 'N/A' },
-    ingredients: ingredients.length > 0 ? ingredients.map(name => ({ name, risk: 'unknown' })) : [{ name: 'Unknown', risk: 'unknown' }],
-    allergens: allergens,
-    dietary: dietary,
-    fallback: false
-  };
 }
 
 // POST /api/chat - Accept product ID + query, return AI response
@@ -523,8 +541,47 @@ function generateEnhancedResponse(productData, userPreferences, query) {
     return "I don't have product information available to answer your question. Please analyze a product first.";
   }
   
-  // Check for specific query patterns
-  if (query.toLowerCase().includes('keto') || query.toLowerCase().includes('ketogenic')) {
+  // Handle empty or invalid product data
+  if (!productData.name || productData.name === "Unknown Product") {
+    return "I couldn't properly analyze this product. Please try scanning it again with better lighting and focus.";
+  }
+  
+  // Check for weight loss related queries
+  if (query.toLowerCase().includes('weight') || query.toLowerCase().includes('lose') || query.toLowerCase().includes('diet')) {
+    if (productData.score >= 70) {
+      return `✅ This ${productData.name} is a good choice for weight management with a health score of ${productData.score}/100. It appears to be nutritious and relatively healthy.`;
+    } else if (productData.nutrition) {
+      const calories = productData.nutrition.calories || productData.nutrition.Calories;
+      if (calories && parseInt(calories) < 100) {
+        return `✅ This ${productData.name} is low in calories (${calories}), making it suitable for weight management.`;
+      } else if (calories && parseInt(calories) > 300) {
+        return `⚠️ This ${productData.name} is high in calories (${calories}), which may not be ideal for weight loss.`;
+      }
+    }
+    return `Based on the available information, this ${productData.name} has a health score of ${productData.score}/100. For weight management, I recommend checking the calorie content and ingredients list.`;
+  }
+  
+  // Check for diabetic-friendly queries
+  if (query.toLowerCase().includes('diabet') || query.toLowerCase().includes('sugar') || query.toLowerCase().includes('glycemic')) {
+    if (productData.nutrition && productData.nutrition.sugar) {
+      const sugarContent = productData.nutrition.sugar;
+      const sugarValue = parseInt(sugarContent);
+      
+      if (sugarValue === 0 || sugarContent.toLowerCase().includes('zero') || sugarContent.toLowerCase().includes('none')) {
+        return `✅ This ${productData.name} is sugar-free, making it suitable for diabetics.`;
+      } else if (sugarValue < 5) {
+        return `✅ This ${productData.name} is low in sugar (${sugarContent}), which is generally acceptable for diabetics in moderation.`;
+      } else if (sugarValue > 15) {
+        return `⚠️ This ${productData.name} is high in sugar (${sugarContent}), which may not be suitable for diabetics.`;
+      } else {
+        return `This ${productData.name} contains ${sugarContent} of sugar. Diabetics should consume this in moderation and monitor their blood sugar levels.`;
+      }
+    }
+    return `For diabetic considerations, I recommend checking the sugar content on the nutrition label. This ${productData.name} has a health score of ${productData.score}/100.`;
+  }
+  
+  // Check for keto/low-carb queries
+  if (query.toLowerCase().includes('keto') || query.toLowerCase().includes('ketogenic') || query.toLowerCase().includes('low carb')) {
     if (productData.dietary && productData.dietary.includes('keto-friendly')) {
       return `Yes, this ${productData.name} is marked as keto-friendly based on the product information.`;
     } else if (productData.nutrition && productData.nutrition.sugar) {
@@ -535,13 +592,15 @@ function generateEnhancedResponse(productData, userPreferences, query) {
         return `This ${productData.name} contains ${productData.nutrition.sugar} of sugar, which may be too high for a strict ketogenic diet.`;
       }
     }
+    return `For keto considerations, look for products with less than 5g net carbs per serving. This ${productData.name} has a health score of ${productData.score}/100.`;
   }
   
+  // Check for vegan queries
   if (query.toLowerCase().includes('vegan')) {
     if (productData.dietary && productData.dietary.includes('vegan')) {
       return `Yes, this ${productData.name} is marked as vegan based on the product information.`;
     } else if (productData.ingredients) {
-      const nonVeganIngredients = ['milk', 'eggs', 'honey', 'gelatin', 'casein'];
+      const nonVeganIngredients = ['milk', 'eggs', 'honey', 'gelatin', 'casein', 'whey', 'lactose'];
       const hasNonVegan = productData.ingredients.some(ing => 
         nonVeganIngredients.some(nonVegan => 
           ing.name.toLowerCase().includes(nonVegan)
@@ -554,8 +613,10 @@ function generateEnhancedResponse(productData, userPreferences, query) {
         return `Based on the ingredients list, this ${productData.name} appears to be vegan-friendly. However, I recommend checking the full ingredients list to be certain.`;
       }
     }
+    return `To determine if this ${productData.name} is vegan, check for animal-derived ingredients like milk, eggs, honey, or gelatin. The health score is ${productData.score}/100.`;
   }
   
+  // Check for allergy safety queries
   if (query.toLowerCase().includes('allerg') || query.toLowerCase().includes('safe')) {
     if (userPreferences && userPreferences.allergies && productData.allergens) {
       const userAllergies = userPreferences.allergies;
@@ -569,24 +630,65 @@ function generateEnhancedResponse(productData, userPreferences, query) {
       } else {
         return `✅ Based on your allergy preferences, this ${productData.name} does not appear to contain any ingredients you're allergic to. However, always check the packaging to be sure.`;
       }
+    } else if (productData.allergens && productData.allergens.length > 0) {
+      return `⚠️ This ${productData.name} contains the following allergens: ${productData.allergens.join(', ')}. Please check if any of these match your allergies.`;
+    }
+    return `I couldn't identify specific allergens in this ${productData.name}. Always check the packaging for complete allergen information.`;
+  }
+  
+  // Check for general health queries
+  if (query.toLowerCase().includes('health') || query.toLowerCase().includes('healthy') || query.toLowerCase().includes('good')) {
+    if (productData.score >= 80) {
+      return `✅ This ${productData.name} has an excellent health score of ${productData.score}/100. It appears to be a very healthy choice.`;
+    } else if (productData.score >= 60) {
+      return `👍 This ${productData.name} has a good health score of ${productData.score}/100. It's a reasonably healthy choice.`;
+    } else if (productData.score >= 40) {
+      return `⚠️ This ${productData.name} has a moderate health score of ${productData.score}/100. It's okay in moderation but has room for improvement.`;
+    } else {
+      return `❌ This ${productData.name} has a poor health score of ${productData.score}/100. You may want to consider healthier alternatives.`;
     }
   }
   
-  if (query.toLowerCase().includes('health') || query.toLowerCase().includes('healthy')) {
-    if (productData.score >= 80) {
-      return `This ${productData.name} has a health score of ${productData.score}/100 which is considered excellent. It appears to be a healthy choice.`;
-    } else if (productData.score >= 60) {
-      return `This ${productData.name} has a health score of ${productData.score}/100 which is considered good. It's a reasonably healthy choice.`;
-    } else {
-      return `This ${productData.name} has a health score of ${productData.score}/100 which is considered poor. You may want to consider healthier alternatives.`;
+  // Check for heart health queries
+  if (query.toLowerCase().includes('heart') || query.toLowerCase().includes('cardio')) {
+    if (productData.dietary && productData.dietary.includes('heart-healthy')) {
+      return `✅ This ${productData.name} is marked as heart-healthy based on the product information.`;
+    } else if (productData.nutrition) {
+      const sodium = productData.nutrition.sodium || productData.nutrition.Sodium;
+      const fat = productData.nutrition.fat || productData.nutrition.Fat;
+      
+      if (sodium && parseInt(sodium) < 140) {
+        return `✅ This ${productData.name} is low in sodium (${sodium}), which is beneficial for heart health.`;
+      } else if (fat && parseInt(fat) < 3) {
+        return `✅ This ${productData.name} is low in fat (${fat}), which is beneficial for heart health.`;
+      }
     }
+    return `For heart health, look for products low in sodium, saturated fat, and cholesterol. This ${productData.name} has a health score of ${productData.score}/100.`;
+  }
+  
+  // Check for high protein queries
+  if (query.toLowerCase().includes('protein') || query.toLowerCase().includes('muscle')) {
+    if (productData.nutrition && productData.nutrition.protein) {
+      const protein = parseInt(productData.nutrition.protein);
+      if (protein > 10) {
+        return `✅ This ${productData.name} is high in protein (${productData.nutrition.protein}), which is great for muscle building and maintenance.`;
+      } else if (protein > 5) {
+        return `👍 This ${productData.name} contains a moderate amount of protein (${productData.nutrition.protein}).`;
+      } else {
+        return `This ${productData.name} is low in protein (${productData.nutrition.protein}). Consider pairing it with high-protein foods.`;
+      }
+    }
+    return `For high protein content, look for products with 10g+ protein per serving. This ${productData.name} has a health score of ${productData.score}/100.`;
   }
   
   // Default responses
   const responses = [
     `Based on the product information for ${productData.name}, this appears to be a ${productData.category || 'general'} item. ${query.includes('healthy') ? 'For health considerations, I recommend checking the ingredients list and nutrition facts.' : 'Is there anything specific about this product you\'d like to know?'}`,
     `This ${productData.name} ${productData.nutrition ? 'has' : 'would have'} nutritional information that can help determine its health value. ${query.includes('?') ? 'What specific aspect are you interested in?' : 'Feel free to ask more detailed questions.'}`,
-    `I can provide more detailed analysis of this ${productData.name}'s ingredients and nutritional content. ${query.includes('ingredient') ? 'The key ingredients would be important to review.' : 'What would you like to know about its composition?'}`]
+    `I can provide more detailed analysis of this ${productData.name}'s ingredients and nutritional content. ${query.includes('ingredient') ? 'The key ingredients would be important to review.' : 'What would you like to know about its composition?'}`,
+    `The health score for ${productData.name} is ${productData.score}/100. ${productData.score >= 70 ? 'This is a good score!' : productData.score >= 50 ? 'This is an average score.' : 'There might be healthier options available.'}`,
+    `For ${productData.name}, I recommend checking the ingredients list for any additives or preservatives, and reviewing the nutrition facts for calories, sugar, and sodium content.`
+  ]
   
   return responses[Math.floor(Math.random() * responses.length)];
 }
