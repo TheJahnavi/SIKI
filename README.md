@@ -418,6 +418,17 @@ This repository contains placeholder files for sensitive credentials:
 - Use environment-specific configuration files
 - Never log sensitive information
 
+## Testing
+
+The application includes comprehensive testing documentation and automated tests:
+
+- **Manual Testing Checklist**: See [Testing and Enhancement Guide](docs/testing-and-enhancement-guide.md)
+- **Bug Reporting**: Use the [Bug Report Template](docs/bug-report-template.md)
+- **Unit Tests**: Run with `npm test`
+- **End-to-End Tests**: Run with `npm run test:e2e`
+
+Refer to [Testing Documentation](docs/testing-readme.md) for more details.
+
 ## Future Enhancements
 - Camera API integration for real image capture
 - Enhanced AI capabilities for product assessment
