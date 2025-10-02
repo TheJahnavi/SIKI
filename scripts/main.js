@@ -77,7 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserPreferences();
     loadRecentScans();
     initializeCamera();
+    
+    // Handle initial page routing based on URL
+    handleInitialRouting();
 });
+
+// Handle initial routing based on URL hash or path
+function handleInitialRouting() {
+    // For SPA routing, we'll use hash-based routing
+    const hash = window.location.hash;
+    
+    if (hash === '#/result' && (selectedImages.length > 0 || currentProduct)) {
+        navigateToResultPage();
+    } else {
+        navigateToHomePage();
+    }
+}
 
 // Theme initialization
 function initializeTheme() {
@@ -195,6 +210,14 @@ function setupEventListeners() {
     
     // Set up real-time listeners when on result page
     resultPage.addEventListener('DOMSubtreeModified', setupRealTimeListeners);
+    
+    // Handle browser back/forward navigation
+    window.addEventListener('popstate', handleBrowserNavigation);
+}
+
+// Handle browser navigation (back/forward buttons)
+function handleBrowserNavigation() {
+    handleInitialRouting();
 }
 
 // Toggle between light and dark themes
@@ -784,9 +807,11 @@ async function logChatInteraction(query, response) {
 
 // Navigate to result page
 function navigateToResultPage() {
-    if (selectedImages.length > 0 || lastAnalysisAttempt) {
+    if (selectedImages.length > 0 || lastAnalysisAttempt || currentProduct) {
         homePage.classList.remove('active');
         resultPage.classList.add('active');
+        // Update URL for SPA routing
+        window.location.hash = '#/result';
         // Set up real-time listeners when navigating to result page
         setupRealTimeListeners();
     }
@@ -796,6 +821,8 @@ function navigateToResultPage() {
 function navigateToHomePage() {
     resultPage.classList.remove('active');
     homePage.classList.add('active');
+    // Update URL for SPA routing
+    window.location.hash = '';
     // Clean up real-time listeners when leaving result page
     cleanupRealTimeListeners();
 }
