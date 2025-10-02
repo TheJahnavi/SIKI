@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Test</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background-color: #00BCD4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #0097A7;
+        }
+        #output {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Configuration Test</h1>
+        <p>This page tests the configuration implementation.</p>
+        
+        <button class="test-button" onclick="testConfig()">Test Configuration</button>
+        
+        <div id="output">Click the button to test the configuration.</div>
+    </div>
+
+    <script type="module">
+        // Import the configuration
+        import config from './scripts/config.js';
+        
+        // Function to test configuration
+        function testConfig() {
+            const output = document.getElementById('output');
+            
+            try {
+                output.innerHTML = 'Testing configuration...\n\n';
+                
+                // Log the current environment
+                output.innerHTML += `Current environment: ${process.env.NODE_ENV || 'development'}\n\n`;
+                
+                // Log the configuration
+                output.innerHTML += `Configuration: ${JSON.stringify(config, null, 2)}\n\n`;
+                
+                // Test API URL
+                output.innerHTML += `API Base URL: ${config.apiUrl}\n\n`;
+                
+                // Test debug mode
+                output.innerHTML += `Debug mode: ${config.debug}\n\n`;
+                
+                // Test Firebase settings
+                output.innerHTML += `Firebase settings: ${JSON.stringify(config.firebase, null, 2)}\n\n`;
+                
+                output.innerHTML += 'Configuration test completed successfully!';
+            } catch (error) {
+                output.innerHTML = `Error testing configuration: ${error.message}\n${error.stack}`;
+            }
+        }
+        
+        // Make the function available globally
+        window.testConfig = testConfig;
+    </script>
+</body>
+</html>

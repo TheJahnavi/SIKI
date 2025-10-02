@@ -9,6 +9,7 @@
     "test": "jest",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
+    "test:config": "node scripts/test-config.js",
     "build": "node scripts/build.js",
     "deploy": "node scripts/deploy.js",
     "optimize": "node scripts/optimize.js"
@@ -45,5 +46,6 @@
     "multer": "^1.4.5-lts.2",
     "sharp": "^0.32.0",
     "tesseract.js": "^4.0.0"
-  }
+  },
+  "type": "module"
 }

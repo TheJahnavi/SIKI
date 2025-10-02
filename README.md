@@ -81,6 +81,7 @@ SIKI/
 ├── scripts/
 │   ├── main.js
 │   ├── fallback-db.js
+│   ├── config.js
 │   ├── build.js
 │   ├── deploy.js
 │   └── optimize.js
@@ -89,6 +90,7 @@ SIKI/
 │   └── icon-512x512.png
 ├── docs/
 │   ├── ai-ml-pipeline-specification.md
+│   ├── backend-deployment-guide.md
 │   ├── complete-integration-summary.md
 │   ├── deployment-guide.md
 │   ├── enhanced-features-summary.md
@@ -346,13 +348,39 @@ npm test
 3. Start server: `npm start`
 
 ### Production Deployment
-1. Set up Firebase project and service account
-2. Configure Hugging Face API token
-3. Set environment variables
-4. Optimize for performance: `npm run optimize`
-5. Deploy to cloud platform (Google Cloud Run, AWS, etc.)
-6. Configure reverse proxy (nginx, Apache)
-7. Set up SSL certificates
+
+#### Deploying the Backend
+Since Netlify only serves static files, you need to deploy the backend separately:
+
+1. **Choose a deployment platform**:
+   - Render (recommended)
+   - Heroku
+   - Google Cloud Run
+   - AWS Elastic Beanstalk
+
+2. **Set environment variables**:
+   - `HUGGINGFACE_API_KEY` - Your Hugging Face API key
+   - `GOOGLE_APPLICATION_CREDENTIALS` - Path to your Firebase service account file
+   - `PORT` - The port to run the server on
+
+3. **Deploy the backend service**
+
+#### Deploying the Frontend
+1. Update `scripts/config.js` with your deployed backend URL
+2. Build the frontend: `npm run build`
+3. Deploy the `dist` directory to your static hosting provider:
+   - Netlify
+   - GitHub Pages
+   - Vercel
+   - Firebase Hosting
+
+#### Configuration
+After deploying both the backend and frontend, make sure to:
+1. Update the `apiUrl` in `scripts/config.js` to point to your deployed backend
+2. Set all required environment variables in your deployment platform
+3. Test the connection between frontend and backend
+
+For detailed instructions, see [Backend Deployment Guide](docs/backend-deployment-guide.md).
 
 ### Deployment Options
 - **GitHub Pages**: Use `npm run deploy` for static deployment
@@ -446,6 +474,9 @@ The application includes comprehensive documentation to support development, tes
 - **Implementation Summary**: [Fallback Modal Summary](docs/fallback-modal-summary.md)
 - **Testing Guide**: [Testing Fallback Modal](docs/testing-fallback-modal.md)
 - **Test the UI**: Open `test-fallback.html` in your browser
+
+### Backend Deployment
+- **Deployment Guide**: [Backend Deployment Guide](docs/backend-deployment-guide.md)
 
 Refer to [Testing Documentation](docs/testing-readme.md) for more details.
 

@@ -1,0 +1,52 @@
+// Configuration file for SIKI App
+// This file contains environment-specific settings
+
+// Configuration object with settings for different environments
+const config = {
+  // Development environment (local development)
+  development: {
+    // API base URL - empty string for relative paths in development
+    apiUrl: '',
+    // Debug mode - enables additional logging
+    debug: true,
+    // Firebase settings
+    firebase: {
+      // Use emulator in development
+      useEmulator: true,
+      emulatorHost: 'localhost',
+      emulatorPort: 8080
+    }
+  },
+  
+  // Production environment (deployed app)
+  production: {
+    // API base URL - replace with your actual deployed backend URL
+    apiUrl: 'https://your-deployed-backend-url.com',
+    // Debug mode - disabled in production
+    debug: false,
+    // Firebase settings
+    firebase: {
+      // Use production Firebase in production
+      useEmulator: false
+    }
+  },
+  
+  // Staging environment (if needed)
+  staging: {
+    // API base URL - replace with your staging backend URL
+    apiUrl: 'https://staging-your-app.com',
+    // Debug mode - enabled in staging for testing
+    debug: true,
+    // Firebase settings
+    firebase: {
+      useEmulator: false
+    }
+  }
+};
+
+// Determine the current environment
+// Default to development if not specified
+const environment = process.env.NODE_ENV || 'development';
+
+// Export the configuration for the current environment
+export default config[environment];

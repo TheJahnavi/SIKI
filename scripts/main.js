@@ -1,5 +1,11 @@
 // Main JavaScript for SIKI Mobile-First Web App
 
+// Import configuration
+import config from './config.js';
+
+// Use the API base URL from configuration
+const API_BASE_URL = config.apiUrl;
+
 // Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -231,7 +237,7 @@ async function saveUserPreferences() {
     
     // In a real implementation, you would send this to the backend
     try {
-        const response = await fetch('/api/user-preferences', {
+        const response = await fetch(`${API_BASE_URL}/api/user-preferences`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -256,7 +262,7 @@ async function saveUserPreferences() {
 // Load user preferences
 async function loadUserPreferences() {
     try {
-        const response = await fetch(`/api/user-preferences/${currentUserId}`);
+        const response = await fetch(`${API_BASE_URL}/api/user-preferences/${currentUserId}`);
         if (response.ok) {
             const data = await response.json();
             if (data.preferences) {
@@ -286,7 +292,7 @@ async function loadUserPreferences() {
 // Load recent scans
 async function loadRecentScans() {
     try {
-        const response = await fetch('/api/history');
+        const response = await fetch(`${API_BASE_URL}/api/history`);
         if (response.ok) {
             const data = await response.json();
             if (data.success && data.history) {
@@ -503,7 +509,7 @@ async function analyzeImages(imageFile = null) {
         
         console.log('Sending image for analysis...');
         
-        const response = await fetch('/api/analyze-product', {
+        const response = await fetch(`${API_BASE_URL}/api/analyze-product`, {
             method: 'POST',
             body: formData
         });
@@ -544,7 +550,7 @@ async function analyzeImages(imageFile = null) {
 async function logProductAnalysis(productData) {
     try {
         // Send product analysis to backend for storage
-        const response = await fetch('/api/store-product', {
+        const response = await fetch(`${API_BASE_URL}/api/store-product`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -706,7 +712,7 @@ async function sendChatMessage(message) {
     
     try {
         // Send message to backend
-        const response = await fetch('/api/chat', {
+        const response = await fetch(`${API_BASE_URL}/api/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -753,7 +759,7 @@ async function sendChatMessage(message) {
 async function logChatInteraction(query, response) {
     try {
         // Send chat log to backend for storage
-        const chatLogResponse = await fetch('/api/chat-log', {
+        const chatLogResponse = await fetch(`${API_BASE_URL}/api/chat-log`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

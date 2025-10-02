@@ -122,19 +122,23 @@ async function build() {
     const distScriptsDir = path.join(distDir, 'scripts');
     createDir(distScriptsDir);
     
-    await copyFile(
-      path.join(__dirname, '..', 'scripts', 'main.js'),
-      path.join(distScriptsDir, 'main.js')
-    );
+    // Copy main scripts
+    const scriptFiles = [
+      'main.js', 
+      'fallback-db.js',
+      'config.js'  // Add config.js to the build
+    ];
     
-    await copyFile(
-      path.join(__dirname, '..', 'scripts', 'fallback-db.js'),
-      path.join(distScriptsDir, 'fallback-db.js')
-    );
-    
-    // Optimize JS files
-    optimizeJS(path.join(distScriptsDir, 'main.js'));
-    optimizeJS(path.join(distScriptsDir, 'fallback-db.js'));
+    for (const file of scriptFiles) {
+      const sourcePath = path.join(__dirname, '..', 'scripts', file);
+      const targetPath = path.join(distScriptsDir, file);
+      await copyFile(sourcePath, targetPath);
+      
+      // Optimize JS files
+      if (file.endsWith('.js')) {
+        optimizeJS(targetPath);
+      }
+    }
     
     // Create and copy icons
     const distIconsDir = path.join(distDir, 'icons');
@@ -161,7 +165,8 @@ async function build() {
       'implementation-summary.md',
       'next-steps-for-contextual-ai.md',
       'test-product-label.txt',
-      'user-preferences-feature.md'
+      'user-preferences-feature.md',
+      'backend-deployment-guide.md'  // Add the new deployment guide
     ];
     for (const file of docFiles) {
       await copyFile(
