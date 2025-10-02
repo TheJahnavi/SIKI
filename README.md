@@ -73,7 +73,8 @@ SIKI/
 ├── .env
 ├── .babelrc
 ├── jest.config.js
-├── firebase-service-account.json
+├── config/
+│   └── firebase-service-account.json
 ├── firebase.rules
 ├── styles/
 │   └── main.css
@@ -131,8 +132,9 @@ SIKI/
 1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
 2. Enable Firestore Database
 3. Create a service account and download the JSON key
-4. Rename the file to `firebase-service-account.json` and place it in the project root
-5. Update the values in the file with your actual service account credentials
+4. Create a `config` directory in the project root
+5. Rename the file to `firebase-service-account.json` and place it in the `config` directory
+6. Update the values in the file with your actual service account credentials
 
 > **Note**: The repository contains a placeholder `firebase-service-account.json` file. Never commit actual service account credentials to version control.
 
@@ -389,10 +391,12 @@ The application includes several performance optimization features:
 
 This repository contains placeholder files for sensitive credentials:
 
-1. **Firebase Service Account** (`firebase-service-account.json`)
+1. **Firebase Service Account** (`config/firebase-service-account.json`)
    - Never commit actual service account credentials to version control
    - Each developer should create their own Firebase project and service account
-   - Download your service account JSON file and place it in the project root
+   - Create a `config` directory in the project root
+   - Download your service account JSON file and place it in the `config` directory
+   - Rename the file to `firebase-service-account.json`
    - Update the values in the file with your actual service account credentials
 
 2. **Hugging Face API Key** (`.env`)
