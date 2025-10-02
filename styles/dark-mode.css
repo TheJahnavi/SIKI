@@ -1,0 +1,70 @@
+/* Dark Mode Overrides for SIKI App */
+
+@media (prefers-color-scheme: dark) {
+  /* Ensure proper contrast for dark mode */
+  .score-visualization {
+    background-color: #4DD0E1; /* Teal 300 for dark mode */
+    color: #000000; /* Black text for contrast */
+  }
+  
+  .product-name,
+  .assessment-text {
+    color: #000000; /* Black text for contrast */
+  }
+  
+  /* Adjust semantic colors for dark mode */
+  .safe {
+    color: #66BB6A; /* Lighter green for dark mode */
+  }
+  
+  .caution {
+    color: #FFD54F; /* Lighter yellow for dark mode */
+  }
+  
+  .warning {
+    color: #E57373; /* Lighter red for dark mode */
+  }
+  
+  .pros-heading {
+    color: #66BB6A; /* Lighter green for dark mode */
+  }
+  
+  .cons-heading {
+    color: #E57373; /* Lighter red for dark mode */
+  }
+  
+  /* Adjust button colors for dark mode */
+  .tonal-button {
+    background-color: rgba(77, 208, 225, 0.12); /* Teal 300 with opacity */
+    color: #4DD0E1; /* Teal 300 */
+  }
+  
+  /* Adjust progress bars for dark mode */
+  .progress-bar {
+    background-color: #424242; /* Darker background */
+  }
+  
+  /* Adjust chat bubble for dark mode */
+  .chat-bubble {
+    background-color: #424242; /* Darker background */
+    color: #FFFFFF; /* White text */
+  }
+  
+  /* Adjust input field for dark mode */
+  .outlined-text-field {
+    background-color: #121212; /* Dark background */
+    color: #FFFFFF; /* White text */
+    border-color: #424242; /* Darker border */
+  }
+  
+  .outlined-text-field:focus {
+    border-color: #4DD0E1; /* Teal 300 for focus */
+  }
+  
+  /* Adjust chip colors for dark mode */
+  .chip {
+    background-color: #424242; /* Darker background */
+    color: #FFFFFF; /* White text */
+    border-color: #424242; /* Darker border */
+  }
+}

@@ -1,0 +1,118 @@
+/* Mobile-Specific Styles for SIKI App */
+
+/* Styles for screens smaller than 600px */
+@media (max-width: 599px) {
+  /* Adjust header overlay for mobile */
+  .header-overlay {
+    padding: 12px;
+  }
+  
+  /* Adjust camera viewport for mobile */
+  .camera-viewport {
+    margin: 64px 12px 120px; /* Top, horizontal, bottom */
+  }
+  
+  /* Adjust action buttons for mobile */
+  .action-buttons {
+    padding: 12px;
+  }
+  
+  /* Adjust image preview bar for mobile */
+  .image-preview-bar {
+    bottom: 120px;
+    padding: 8px;
+  }
+  
+  /* Adjust preview thumbnails for mobile */
+  .preview-thumbnail {
+    width: 56px;
+    height: 56px;
+  }
+  
+  /* Adjust top app bar for mobile */
+  .top-app-bar {
+    padding: 0 12px;
+    height: 56px;
+  }
+  
+  /* Adjust score visualization for mobile */
+  .score-visualization {
+    padding: 24px 16px;
+  }
+  
+  .product-name {
+    font-size: 1.75rem;
+  }
+  
+  .assessment-text {
+    font-size: 1rem;
+  }
+  
+  /* Adjust alternatives CTA for mobile */
+  .alternatives-cta {
+    padding: 12px;
+  }
+  
+  /* Adjust detail sections for mobile */
+  .detail-sections {
+    padding: 12px;
+  }
+  
+  .panel-header {
+    padding: 12px;
+  }
+  
+  .panel-content {
+    padding: 0 12px 12px;
+  }
+  
+  /* Adjust nutrition items for mobile */
+  .nutrition-item {
+    margin-bottom: 12px;
+  }
+  
+  /* Adjust Q&A input area for mobile */
+  .qa-input-area {
+    padding: 12px;
+  }
+  
+  .input-chips {
+    margin-bottom: 12px;
+  }
+  
+  /* Adjust text field for mobile */
+  .outlined-text-field {
+    height: 48px;
+    padding: 0 12px;
+  }
+  
+  .send-button {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Styles for very small screens (less than 360px) */
+@media (max-width: 359px) {
+  /* Further adjust action buttons for very small screens */
+  .large-fab {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .extended-fab {
+    height: 48px;
+    padding: 0 16px;
+  }
+  
+  .fab-style {
+    width: 48px;
+    height: 48px;
+  }
+  
+  /* Adjust preview thumbnails for very small screens */
+  .preview-thumbnail {
+    width: 48px;
+    height: 48px;
+  }
+}

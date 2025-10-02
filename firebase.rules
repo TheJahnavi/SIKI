@@ -1,0 +1,29 @@
+// Firebase Firestore Rules for SIKI Application
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to product analysis data
+    match /productAnalysis/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow public read access to chat history
+    match /chatHistory/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Allow public read access to missing products reports
+    match /missingProducts/{document} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // User preferences (when authentication is added)
+    match /userPreferences/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

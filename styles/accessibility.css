@@ -1,0 +1,115 @@
+/* Accessibility Enhancements for SIKI App */
+
+/* Focus styles for keyboard navigation */
+:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --surface: #FFFFFF;
+    --on-surface: #000000;
+    --surface-container: #F0F0F0;
+    --surface-container-highest: #E0E0E0;
+  }
+  
+  .icon-button,
+  .fab-style,
+  .large-fab,
+  .extended-fab {
+    border: 2px solid var(--on-surface);
+  }
+  
+  .score-visualization {
+    border: 2px solid var(--on-surface);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .scanning-line {
+    animation: none;
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 8px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* ARIA attributes for custom components */
+[role="button"] {
+  cursor: pointer;
+}
+
+[aria-expanded="true"] .expand-icon {
+  transform: rotate(180deg);
+}
+
+[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ensure sufficient color contrast */
+.high-contrast-text {
+  background-color: var(--surface);
+  color: var(--on-surface);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+
+/* Focus visible polyfill for older browsers */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+.js-focus-visible .focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Touch target sizing for accessibility */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Text scaling support */
+@media (max-width: 599px) and (min-resolution: 2dppx) {
+  body {
+    font-size: 1.125rem; /* 18px base font size for high DPI mobile screens */
+  }
+}

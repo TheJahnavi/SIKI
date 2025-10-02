@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by Jest
+coverage/
+
+# Build directory
+dist/
+
+# Environment variables
+.env
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Firebase service account (should not be committed)
+firebase-service-account.json
+config/firebase-service-account.json
+
+# Uploads directory
+uploads/

@@ -1,0 +1,268 @@
+/* Pagination Styles for SIKI App */
+
+/* Base pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 24px 0;
+  list-style: none;
+  gap: 4px;
+}
+
+/* Pagination item */
+.pagination-item {
+  display: inline-block;
+}
+
+/* Pagination link */
+.pagination-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin: 0;
+  border-radius: 8px;
+  background-color: var(--surface);
+  color: var(--on-surface);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--surface-container-highest);
+}
+
+.pagination-link:hover {
+  background-color: var(--surface-container);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.pagination-link:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Pagination active */
+.pagination-item.active .pagination-link {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+/* Pagination disabled */
+.pagination-item.disabled .pagination-link {
+  color: var(--on-surface-variant);
+  background-color: var(--surface-container);
+  border-color: var(--surface-container-highest);
+  cursor: not-allowed;
+}
+
+.pagination-item.disabled .pagination-link:hover {
+  background-color: var(--surface-container);
+  color: var(--on-surface-variant);
+  border-color: var(--surface-container-highest);
+}
+
+/* Pagination variants */
+.pagination-primary .pagination-link {
+  border-color: var(--primary);
+}
+
+.pagination-primary .pagination-item.active .pagination-link {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+.pagination-success .pagination-link {
+  border-color: var(--success-color);
+}
+
+.pagination-success .pagination-item.active .pagination-link {
+  background-color: var(--success-color);
+  color: var(--on-success);
+  border-color: var(--success-color);
+}
+
+.pagination-warning .pagination-link {
+  border-color: var(--caution-color);
+}
+
+.pagination-warning .pagination-item.active .pagination-link {
+  background-color: var(--caution-color);
+  color: var(--on-caution);
+  border-color: var(--caution-color);
+}
+
+.pagination-error .pagination-link {
+  border-color: var(--warning-color);
+}
+
+.pagination-error .pagination-item.active .pagination-link {
+  background-color: var(--warning-color);
+  color: var(--on-warning);
+  border-color: var(--warning-color);
+}
+
+/* Pagination sizes */
+.pagination-sm .pagination-link {
+  width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+.pagination-md .pagination-link {
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
+}
+
+.pagination-lg .pagination-link {
+  width: 48px;
+  height: 48px;
+  font-size: 1.125rem;
+}
+
+/* Pagination with rounded corners */
+.pagination-rounded .pagination-link {
+  border-radius: 50%;
+}
+
+/* Pagination with shadow */
+.pagination-shadow .pagination-link {
+  box-shadow: var(--shadow-1);
+}
+
+.pagination-shadow .pagination-link:hover {
+  box-shadow: var(--shadow-2);
+}
+
+/* Pagination with icon */
+.pagination-with-icon .pagination-link {
+  gap: 4px;
+}
+
+.pagination-icon {
+  font-size: 1.25rem;
+}
+
+/* Pagination with ellipsis */
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--on-surface-variant);
+  font-weight: 500;
+}
+
+/* Pagination with border */
+.pagination-bordered {
+  gap: 0;
+}
+
+.pagination-bordered .pagination-link {
+  border-radius: 0;
+  border-right: none;
+}
+
+.pagination-bordered .pagination-item:first-child .pagination-link {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.pagination-bordered .pagination-item:last-child .pagination-link {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-right: 1px solid var(--surface-container-highest);
+}
+
+.pagination-bordered.pagination-rounded .pagination-link {
+  border-radius: 0;
+}
+
+.pagination-bordered.pagination-rounded .pagination-item:first-child .pagination-link {
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+
+.pagination-bordered.pagination-rounded .pagination-item:last-child .pagination-link {
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  border-right: 1px solid var(--surface-container-highest);
+}
+
+/* Pagination with hover effect */
+.pagination-hover .pagination-link {
+  transition: all 0.3s ease;
+}
+
+.pagination-hover .pagination-link:hover {
+  transform: translateY(-2px);
+}
+
+/* Pagination with animation */
+@keyframes pagination-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.pagination-animated .pagination-item.active .pagination-link {
+  animation: pagination-bounce 0.5s ease;
+}
+
+/* Pagination responsive */
+@media (max-width: 599px) {
+  .pagination {
+    gap: 2px;
+  }
+  
+  .pagination-link {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+  
+  .pagination-sm .pagination-link {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+  
+  .pagination-lg .pagination-link {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+  
+  .pagination-ellipsis {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Dark mode pagination adjustments */
+@media (prefers-color-scheme: dark) {
+  .pagination-link {
+    background-color: var(--surface);
+    border-color: var(--surface-container-highest);
+  }
+  
+  .pagination-link:hover {
+    background-color: var(--surface-container);
+  }
+  
+  .pagination-item.disabled .pagination-link {
+    background-color: var(--surface-container);
+    border-color: var(--surface-container-highest);
+  }
+  
+  .pagination-bordered .pagination-item:last-child .pagination-link {
+    border-color: var(--surface-container-highest);
+  }
+}

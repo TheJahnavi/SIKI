@@ -1,0 +1,289 @@
+/* Card Styles for SIKI App */
+
+/* Base card */
+.card {
+  background-color: var(--surface);
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-2);
+}
+
+/* Card header */
+.card-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--surface-container-highest);
+}
+
+.card-header-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--on-surface);
+}
+
+/* Card body */
+.card-body {
+  padding: 16px;
+}
+
+/* Card footer */
+.card-footer {
+  padding: 16px;
+  border-top: 1px solid var(--surface-container-highest);
+}
+
+/* Card image */
+.card-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.card-img-top {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Card title */
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: var(--on-surface);
+}
+
+/* Card subtitle */
+.card-subtitle {
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+  color: var(--on-surface-variant);
+}
+
+/* Card text */
+.card-text {
+  color: var(--on-surface-variant);
+  margin-bottom: 16px;
+}
+
+.card-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Card links */
+.card-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.card-link:hover {
+  text-decoration: underline;
+}
+
+/* Card actions */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-action {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.card-action:hover {
+  background-color: rgba(0, 188, 212, 0.1);
+}
+
+/* Card variants */
+.card-primary {
+  border-left: 4px solid var(--primary);
+}
+
+.card-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.card-warning {
+  border-left: 4px solid var(--caution-color);
+}
+
+.card-error {
+  border-left: 4px solid var(--warning-color);
+}
+
+/* Card sizes */
+.card-sm {
+  max-width: 300px;
+}
+
+.card-md {
+  max-width: 500px;
+}
+
+.card-lg {
+  max-width: 800px;
+}
+
+/* Card with no padding */
+.card-no-padding .card-body {
+  padding: 0;
+}
+
+/* Card with image overlay */
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.card-img-overlay .card-title {
+  color: white;
+}
+
+.card-img-overlay .card-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Card group */
+.card-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card-group .card {
+  flex: 1 1 300px;
+}
+
+/* Card deck */
+.card-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* Card columns */
+.card-columns {
+  column-count: 3;
+  column-gap: 16px;
+}
+
+.card-columns .card {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Card with horizontal layout */
+.card-horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.card-horizontal .card-img {
+  width: 40%;
+  height: auto;
+  object-fit: cover;
+}
+
+.card-horizontal .card-body {
+  width: 60%;
+}
+
+/* Card with badge */
+.card-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Card with ribbon */
+.card-ribbon {
+  position: absolute;
+  top: 16px;
+  left: -12px;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  padding: 4px 12px;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-1);
+}
+
+.card-ribbon::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -12px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: transparent var(--primary) transparent transparent;
+}
+
+/* Responsive cards */
+@media (max-width: 599px) {
+  .card {
+    margin-bottom: 16px;
+  }
+  
+  .card-group {
+    flex-direction: column;
+  }
+  
+  .card-group .card {
+    flex: 1 1 auto;
+  }
+  
+  .card-deck {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-columns {
+    column-count: 1;
+  }
+  
+  .card-horizontal {
+    flex-direction: column;
+  }
+  
+  .card-horizontal .card-img {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .card-horizontal .card-body {
+    width: 100%;
+  }
+}

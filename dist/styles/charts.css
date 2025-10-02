@@ -1,0 +1,302 @@
+/* Chart Styles for SIKI App */
+
+/* Base chart container */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  margin-bottom: 24px;
+}
+
+/* Chart canvas */
+.chart-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Chart title */
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: var(--on-surface);
+  text-align: center;
+}
+
+/* Chart legend */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.chart-legend-label {
+  font-size: 0.875rem;
+  color: var(--on-surface-variant);
+}
+
+/* Chart tooltip */
+.chart-tooltip {
+  position: absolute;
+  background-color: var(--surface);
+  border-radius: 8px;
+  box-shadow: var(--shadow-2);
+  padding: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+}
+
+.chart-tooltip.show {
+  opacity: 1;
+}
+
+.chart-tooltip-title {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+}
+
+.chart-tooltip-content {
+  font-size: 0.875rem;
+  color: var(--on-surface-variant);
+}
+
+/* Chart axis */
+.chart-axis {
+  stroke: var(--on-surface-variant);
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--on-surface-variant);
+  font-size: 0.75rem;
+  text-anchor: middle;
+}
+
+/* Chart grid */
+.chart-grid {
+  stroke: var(--surface-container-highest);
+  stroke-width: 1;
+  stroke-dasharray: 2,2;
+}
+
+/* Chart data elements */
+.chart-bar {
+  fill: var(--primary);
+  transition: fill 0.2s ease;
+}
+
+.chart-bar:hover {
+  fill: var(--primary-dark);
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+
+.chart-point {
+  fill: var(--primary);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.chart-area {
+  fill: rgba(0, 188, 212, 0.2);
+}
+
+/* Chart variants */
+.chart-primary {
+  --chart-color-1: var(--primary);
+  --chart-color-2: var(--success-color);
+  --chart-color-3: var(--caution-color);
+  --chart-color-4: var(--warning-color);
+}
+
+.chart-secondary {
+  --chart-color-1: var(--surface-container-highest);
+  --chart-color-2: var(--on-surface-variant);
+  --chart-color-3: var(--on-surface);
+  --chart-color-4: var(--surface);
+}
+
+/* Chart pie */
+.chart-pie-slice {
+  stroke: var(--surface);
+  stroke-width: 2;
+  transition: transform 0.2s ease;
+}
+
+.chart-pie-slice:hover {
+  transform: scale(1.05);
+}
+
+/* Chart donut */
+.chart-donut-hole {
+  fill: var(--surface);
+}
+
+/* Chart responsive */
+@media (max-width: 599px) {
+  .chart-container {
+    height: 250px;
+  }
+  
+  .chart-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .chart-title {
+    font-size: 1rem;
+  }
+}
+
+/* Dark mode chart adjustments */
+@media (prefers-color-scheme: dark) {
+  .chart-axis {
+    stroke: var(--on-surface-variant);
+  }
+  
+  .chart-axis-label {
+    fill: var(--on-surface-variant);
+  }
+  
+  .chart-grid {
+    stroke: var(--surface-container-highest);
+  }
+  
+  .chart-tooltip {
+    background-color: var(--surface-container);
+  }
+}
+
+/* Chart loading state */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.chart-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--surface-container-highest);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Chart error state */
+.chart-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--warning-color);
+  text-align: center;
+}
+
+.chart-error-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.chart-error-message {
+  font-size: 1rem;
+  color: var(--on-surface-variant);
+}
+
+/* Chart empty state */
+.chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--on-surface-variant);
+  text-align: center;
+}
+
+.chart-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.chart-empty-message {
+  font-size: 1rem;
+}
+
+/* Chart with gradient */
+.chart-gradient-primary {
+  fill: url(#gradient-primary);
+}
+
+.chart-gradient-success {
+  fill: url(#gradient-success);
+}
+
+.chart-gradient-caution {
+  fill: url(#gradient-caution);
+}
+
+.chart-gradient-warning {
+  fill: url(#gradient-warning);
+}
+
+/* Chart animation */
+@keyframes chartAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chart-animated {
+  animation: chartAppear 0.5s ease-out;
+}
+
+/* Chart with multiple series */
+.chart-series-1 {
+  fill: var(--chart-color-1);
+  stroke: var(--chart-color-1);
+}
+
+.chart-series-2 {
+  fill: var(--chart-color-2);
+  stroke: var(--chart-color-2);
+}
+
+.chart-series-3 {
+  fill: var(--chart-color-3);
+  stroke: var(--chart-color-3);
+}
+
+.chart-series-4 {
+  fill: var(--chart-color-4);
+  stroke: var(--chart-color-4);
+}

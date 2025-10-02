@@ -1,0 +1,326 @@
+/* Tab Styles for SIKI App */
+
+/* Base tabs */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 24px 0;
+  list-style: none;
+  border-bottom: 1px solid var(--surface-container-highest);
+}
+
+/* Tab item */
+.tab-item {
+  margin-bottom: -1px;
+}
+
+/* Tab link */
+.tab-link {
+  display: block;
+  padding: 12px 16px;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-link:hover {
+  color: var(--on-surface);
+  background-color: var(--surface-container);
+}
+
+.tab-link:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Tab active */
+.tab-item.active .tab-link {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background-color: transparent;
+}
+
+/* Tab variants */
+.tabs-primary {
+  border-bottom-color: var(--primary);
+}
+
+.tabs-primary .tab-item.active .tab-link {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tabs-success {
+  border-bottom-color: var(--success-color);
+}
+
+.tabs-success .tab-item.active .tab-link {
+  color: var(--success-color);
+  border-bottom-color: var(--success-color);
+}
+
+.tabs-warning {
+  border-bottom-color: var(--caution-color);
+}
+
+.tabs-warning .tab-item.active .tab-link {
+  color: var(--caution-color);
+  border-bottom-color: var(--caution-color);
+}
+
+.tabs-error {
+  border-bottom-color: var(--warning-color);
+}
+
+.tabs-error .tab-item.active .tab-link {
+  color: var(--warning-color);
+  border-bottom-color: var(--warning-color);
+}
+
+/* Tab sizes */
+.tabs-sm .tab-link {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.tabs-md .tab-link {
+  padding: 12px 16px;
+  font-size: 1rem;
+}
+
+.tabs-lg .tab-link {
+  padding: 16px 20px;
+  font-size: 1.125rem;
+}
+
+/* Tab with background */
+.tabs-background {
+  background-color: var(--surface-container);
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.tabs-background .tab-link {
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.tabs-background .tab-item.active .tab-link {
+  background-color: var(--surface);
+  border-bottom: none;
+}
+
+/* Tab with border */
+.tabs-bordered {
+  border: 1px solid var(--surface-container-highest);
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.tabs-bordered .tab-link {
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  border-right: 1px solid var(--surface-container-highest);
+}
+
+.tabs-bordered .tab-item:last-child .tab-link {
+  border-right: none;
+}
+
+.tabs-bordered .tab-item.active .tab-link {
+  border-bottom: none;
+  border-right: 1px solid var(--surface-container-highest);
+}
+
+/* Tab with shadow */
+.tabs-shadow {
+  box-shadow: var(--shadow-1);
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+.tabs-shadow .tab-link {
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.tabs-shadow .tab-item.active .tab-link {
+  border-bottom: none;
+}
+
+/* Tab with icon */
+.tab-with-icon .tab-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-icon {
+  font-size: 1.25rem;
+}
+
+/* Tab with badge */
+.tab-with-badge .tab-link {
+  position: relative;
+}
+
+.tab-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  transform: translate(50%, -50%);
+}
+
+/* Tab with full width */
+.tabs-full-width {
+  display: flex;
+}
+
+.tabs-full-width .tab-item {
+  flex: 1;
+  text-align: center;
+}
+
+.tabs-full-width .tab-link {
+  text-align: center;
+}
+
+/* Tab with hover effect */
+.tabs-hover .tab-link {
+  transition: all 0.3s ease;
+}
+
+.tabs-hover .tab-link:hover {
+  transform: translateY(-2px);
+}
+
+/* Tab with animation */
+@keyframes tab-slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tabs-animated .tab-content {
+  animation: tab-slideIn 0.3s ease;
+}
+
+/* Tab content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Tab content with padding */
+.tab-content-padded {
+  padding: 24px 0;
+}
+
+.tab-content-padded-sm {
+  padding: 16px 0;
+}
+
+.tab-content-padded-lg {
+  padding: 32px 0;
+}
+
+/* Tab responsive */
+@media (max-width: 599px) {
+  .tabs {
+    flex-direction: column;
+    border-bottom: none;
+    border-right: 1px solid var(--surface-container-highest);
+  }
+  
+  .tab-item {
+    margin-bottom: 0;
+    margin-right: -1px;
+  }
+  
+  .tab-link {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+  }
+  
+  .tab-item.active .tab-link {
+    border-right-color: var(--primary);
+    border-bottom: none;
+  }
+  
+  .tabs-bordered {
+    border: 1px solid var(--surface-container-highest);
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+  }
+  
+  .tabs-bordered .tab-link {
+    border-right: none;
+    border-bottom: 1px solid var(--surface-container-highest);
+    border-radius: 8px 0 0 8px;
+  }
+  
+  .tabs-bordered .tab-item:last-child .tab-link {
+    border-bottom: none;
+  }
+  
+  .tabs-bordered .tab-item.active .tab-link {
+    border-right: none;
+    border-bottom: 1px solid var(--surface-container-highest);
+  }
+  
+  .tabs-full-width {
+    flex-direction: row;
+  }
+  
+  .tabs-full-width .tab-item {
+    flex: none;
+    text-align: left;
+  }
+}
+
+/* Dark mode tab adjustments */
+@media (prefers-color-scheme: dark) {
+  .tabs {
+    border-bottom-color: var(--surface-container-highest);
+  }
+  
+  .tab-link:hover {
+    background-color: var(--surface-container);
+  }
+  
+  .tabs-background {
+    background-color: var(--surface-container);
+  }
+  
+  .tabs-background .tab-item.active .tab-link {
+    background-color: var(--surface);
+  }
+  
+  .tabs-bordered {
+    border-color: var(--surface-container-highest);
+  }
+  
+  .tabs-bordered .tab-link {
+    border-color: var(--surface-container-highest);
+  }
+  
+  .tabs-bordered .tab-item:last-child .tab-link {
+    border-color: var(--surface-container-highest);
+  }
+  
+  .tabs-bordered .tab-item.active .tab-link {
+    border-color: var(--surface-container-highest);
+  }
+}

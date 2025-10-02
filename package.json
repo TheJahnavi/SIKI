@@ -1,0 +1,45 @@
+{
+  "name": "siki-app",
+  "version": "1.0.0",
+  "description": "SIKI - Scan It Know It: Mobile-first web application for scanning and analyzing product images",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest",
+    "build": "node scripts/build.js",
+    "deploy": "node scripts/deploy.js",
+    "optimize": "node scripts/optimize.js"
+  },
+  "keywords": [
+    "product",
+    "scanner",
+    "health",
+    "analysis",
+    "mobile",
+    "pwa"
+  ],
+  "author": "SIKI Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "babel-jest": "^29.5.0",
+    "gh-pages": "^4.0.0",
+    "jest": "^29.0.0",
+    "live-server": "^1.2.2",
+    "supertest": "^7.1.4"
+  },
+  "dependencies": {
+    "@huggingface/inference": "^4.9.0",
+    "@tensorflow-models/mobilenet": "^2.1.1",
+    "@tensorflow/tfjs-node": "^4.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.0",
+    "firebase-admin": "^13.5.0",
+    "multer": "^1.4.5-lts.2",
+    "sharp": "^0.32.0",
+    "tesseract.js": "^4.0.0"
+  }
+}

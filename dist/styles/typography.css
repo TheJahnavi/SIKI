@@ -1,0 +1,244 @@
+/* Typography Enhancements for SIKI App */
+
+/* Material Design 3 Typography Scale */
+.display-large {
+  font-size: 3.5rem;
+  line-height: 1.143;
+  font-weight: 400;
+  letter-spacing: -0.016em;
+}
+
+.display-medium {
+  font-size: 2.8125rem;
+  line-height: 1.156;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.display-small {
+  font-size: 2.25rem;
+  line-height: 1.222;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.headline-large {
+  font-size: 2rem;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.headline-medium {
+  font-size: 1.75rem;
+  line-height: 1.286;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.headline-small {
+  font-size: 1.5rem;
+  line-height: 1.333;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.title-large {
+  font-size: 1.375rem;
+  line-height: 1.273;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.title-medium {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.009375em;
+}
+
+.title-small {
+  font-size: 0.875rem;
+  line-height: 1.429;
+  font-weight: 500;
+  letter-spacing: 0.007143em;
+}
+
+.body-large {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0.03125em;
+}
+
+.body-medium {
+  font-size: 0.875rem;
+  line-height: 1.429;
+  font-weight: 400;
+  letter-spacing: 0.017857em;
+}
+
+.body-small {
+  font-size: 0.75rem;
+  line-height: 1.333;
+  font-weight: 400;
+  letter-spacing: 0.033333em;
+}
+
+.label-large {
+  font-size: 0.875rem;
+  line-height: 1.429;
+  font-weight: 500;
+  letter-spacing: 0.007143em;
+}
+
+.label-medium {
+  font-size: 0.75rem;
+  line-height: 1.333;
+  font-weight: 500;
+  letter-spacing: 0.033333em;
+}
+
+.label-small {
+  font-size: 0.6875rem;
+  line-height: 1.455;
+  font-weight: 500;
+  letter-spacing: 0.033333em;
+}
+
+/* Responsive typography adjustments */
+@media (max-width: 599px) {
+  .display-large {
+    font-size: 2.8125rem;
+  }
+  
+  .display-medium {
+    font-size: 2.25rem;
+  }
+  
+  .display-small {
+    font-size: 1.75rem;
+  }
+  
+  .headline-large {
+    font-size: 1.75rem;
+  }
+  
+  .headline-medium {
+    font-size: 1.5rem;
+  }
+  
+  .headline-small {
+    font-size: 1.25rem;
+  }
+  
+  .title-large {
+    font-size: 1.25rem;
+  }
+}
+
+/* Font weight utilities */
+.font-light {
+  font-weight: 300;
+}
+
+.font-regular {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Text alignment utilities */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+/* Text transform utilities */
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-lowercase {
+  text-transform: lowercase;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+/* Text decoration utilities */
+.text-underline {
+  text-decoration: underline;
+}
+
+.text-line-through {
+  text-decoration: line-through;
+}
+
+.text-no-underline {
+  text-decoration: none;
+}
+
+/* Line height utilities */
+.leading-tight {
+  line-height: 1.25;
+}
+
+.leading-snug {
+  line-height: 1.375;
+}
+
+.leading-normal {
+  line-height: 1.5;
+}
+
+.leading-relaxed {
+  line-height: 1.625;
+}
+
+.leading-loose {
+  line-height: 2;
+}
+
+/* Letter spacing utilities */
+.tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.tracking-normal {
+  letter-spacing: 0;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.tracking-widest {
+  letter-spacing: 0.1em;
+}
