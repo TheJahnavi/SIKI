@@ -5,7 +5,9 @@ const urlsToCache = [
   '/',
   '/styles/main.css',
   '/scripts/main.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 // Install event - cache essential files
@@ -21,6 +23,7 @@ self.addEventListener('install', event => {
 
 // Cache and network race
 self.addEventListener('fetch', event => {
+  // Handle image requests
   if (event.request.destination === 'image') {
     event.respondWith(
       caches.open('siki-images-v1').then((cache) => {
@@ -35,10 +38,13 @@ self.addEventListener('fetch', event => {
         });
       })
     );
+    return;
   }
   
-  // For other requests, use the existing strategy
-  if (event.request.destination === 'document' || event.request.destination === 'script' || event.request.destination === 'style') {
+  // Handle document, script, and style requests
+  if (event.request.destination === 'document' || 
+      event.request.destination === 'script' || 
+      event.request.destination === 'style') {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(event.request).then((response) => {
@@ -52,6 +58,27 @@ self.addEventListener('fetch', event => {
         });
       })
     );
+    return;
+  }
+  
+  // Handle API requests
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Return fallback data when offline
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Network error - offline mode'
+          }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+            status: 503
+          }
+        );
+      })
+    );
+    return;
   }
 });
 

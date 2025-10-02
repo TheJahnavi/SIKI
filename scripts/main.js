@@ -27,6 +27,7 @@ const imagePreviewBar = document.getElementById('image-preview-bar');
 const previewContainer = document.querySelector('.preview-container');
 const backButton = document.getElementById('back-button');
 const expansionPanels = document.querySelectorAll('.expansion-panel');
+const cameraViewport = document.querySelector('.camera-viewport');
 
 // Preferences Modal Elements
 const preferencesModal = document.getElementById('preferences-modal');
@@ -44,6 +45,7 @@ let currentUserPreferences = [];
 let currentUserId = 'user-' + Date.now(); // In a real app, this would come from authentication
 let unsubscribeHistory = null; // For real-time updates
 let unsubscribeChat = null; // For real-time updates
+let mediaStream = null; // For camera stream
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
@@ -51,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     loadUserPreferences();
     loadRecentScans();
+    initializeCamera();
 });
 
 // Theme initialization
@@ -65,6 +68,50 @@ function updateTheme() {
     document.body.className = `theme-${currentTheme}`;
     const themeIcon = themeToggle.querySelector('.material-icons');
     themeIcon.textContent = currentTheme === 'light' ? 'dark_mode' : 'light_mode';
+}
+
+// Initialize camera
+async function initializeCamera() {
+    try {
+        // Check if we're on a secure context (HTTPS or localhost)
+        if (!isSecureContext) {
+            console.warn('Camera access requires secure context (HTTPS or localhost)');
+            return;
+        }
+        
+        // Get camera stream
+        const constraints = {
+            video: {
+                facingMode: isFrontCamera ? 'user' : 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        };
+        
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Create video element for camera preview
+        const video = document.createElement('video');
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
+        video.autoplay = true;
+        video.playsInline = true;
+        video.srcObject = mediaStream;
+        
+        // Replace camera placeholder with video element
+        const cameraPlaceholder = cameraViewport.querySelector('.camera-placeholder');
+        if (cameraPlaceholder) {
+            cameraViewport.removeChild(cameraPlaceholder);
+        }
+        cameraViewport.appendChild(video);
+        
+        console.log('Camera initialized successfully');
+    } catch (error) {
+        console.error('Error accessing camera:', error);
+        // Keep the placeholder if camera access fails
+    }
 }
 
 // Set up all event listeners
@@ -82,8 +129,8 @@ function setupEventListeners() {
     galleryButton.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
     
-    // Camera button (simulated)
-    cameraButton.addEventListener('click', simulateCameraCapture);
+    // Camera button
+    cameraButton.addEventListener('click', captureAndAddImage);
     
     // Analyze button
     analyzeButton.addEventListener('click', analyzeImages);
@@ -245,7 +292,15 @@ function toggleCamera() {
     const cameraIcon = cameraSwitch.querySelector('.material-icons');
     cameraIcon.textContent = isFrontCamera ? 'flip_camera_ios' : 'flip_camera_android';
     
-    // In a real app, this would switch the camera
+    // Restart camera with new constraints
+    if (mediaStream) {
+        // Stop current stream
+        mediaStream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Initialize camera with new constraints
+    initializeCamera();
+    
     console.log(`Switched to ${isFrontCamera ? 'front' : 'back'} camera`);
 }
 
@@ -261,7 +316,49 @@ function handleFileSelect(event) {
     }
 }
 
-// Simulate camera capture
+// Capture image from camera
+async function captureImageFromCamera() {
+    try {
+        const video = cameraViewport.querySelector('video');
+        if (!video) {
+            throw new Error('No video element found');
+        }
+        
+        // Create canvas to capture image
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to blob
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                resolve(file);
+            }, 'image/jpeg', 0.9);
+        });
+    } catch (error) {
+        console.error('Error capturing image from camera:', error);
+        throw error;
+    }
+}
+
+// Capture image from camera and add to preview
+async function captureAndAddImage() {
+    try {
+        const imageFile = await captureImageFromCamera();
+        addImageToPreview(imageFile);
+        updateAnalyzeButtonState();
+    } catch (error) {
+        console.error('Error capturing image:', error);
+        // Fallback to simulated capture
+        simulateCameraCapture();
+    }
+}
+
+// Simulate camera capture (fallback)
 function simulateCameraCapture() {
     // In a real app, this would capture an image from the camera
     // For demo purposes, we'll create a placeholder
@@ -280,6 +377,19 @@ function addImageToPreview(file) {
     // Create thumbnail element
     const thumbnail = document.createElement('div');
     thumbnail.className = 'preview-thumbnail';
+    
+    // Create image preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '8px';
+        thumbnail.appendChild(img);
+    };
+    reader.readAsDataURL(file);
     
     // Create close icon
     const closeIcon = document.createElement('div');

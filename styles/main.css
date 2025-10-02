@@ -248,12 +248,26 @@ body {
   margin-bottom: 120px; /* Space for action buttons */
 }
 
+.camera-viewport video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
 .camera-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-md);
   color: var(--on-surface-variant);
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.camera-instruction {
+  font-size: 0.875rem;
+  opacity: 0.8;
 }
 
 .scanning-line {
