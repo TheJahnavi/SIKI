@@ -2,6 +2,8 @@
 
 A mobile-first web application for scanning and analyzing product images to provide health assessments.
 
+> **Important Security Notice**: This repository contains placeholder files for sensitive credentials. Never commit actual credentials to version control. See the [Security Considerations](#security-considerations) section for details on proper credential management.
+
 ## Project Overview
 
 SIKI is a responsive web application built with Material Design 3 principles that allows users to:
@@ -132,13 +134,17 @@ SIKI/
 4. Rename the file to `firebase-service-account.json` and place it in the project root
 5. Update the values in the file with your actual service account credentials
 
+> **Note**: The repository contains a placeholder `firebase-service-account.json` file. Never commit actual service account credentials to version control.
+
 #### Hugging Face Setup
 1. Create an account at [Hugging Face](https://huggingface.co/)
 2. Generate an API token in your account settings
-3. Add the token to your `.env` file:
+3. Create a `.env` file from `.env.example` and add your token:
    ```env
    HUGGINGFACE_API_KEY=your_actual_huggingface_api_key
    ```
+
+> **Note**: The repository contains a placeholder `.env` file. Never commit actual API keys to version control.
 
 ### Running the Application
 1. Build the frontend:
@@ -378,6 +384,35 @@ The application includes several performance optimization features:
 - Use HTTPS in production
 - Secure Firestore with proper security rules
 - Protect API endpoints with authentication
+
+### Credential Management
+
+This repository contains placeholder files for sensitive credentials:
+
+1. **Firebase Service Account** (`firebase-service-account.json`)
+   - Never commit actual service account credentials to version control
+   - Each developer should create their own Firebase project and service account
+   - Download your service account JSON file and place it in the project root
+   - Update the values in the file with your actual service account credentials
+
+2. **Hugging Face API Key** (`.env`)
+   - Never commit actual API keys to version control
+   - Create a `.env` file from `.env.example`
+   - Replace placeholder values with your actual credentials
+
+3. **Environment Variables**
+   - All sensitive configuration should be stored in environment variables
+   - The `.env` file is included in `.gitignore` to prevent accidental commits
+   - In production, set environment variables through your deployment platform
+
+### Best Practices
+
+- Regularly rotate API keys and service account credentials
+- Use least privilege principles for service accounts
+- Monitor usage of API keys and credentials
+- Implement proper error handling to avoid exposing sensitive information
+- Use environment-specific configuration files
+- Never log sensitive information
 
 ## Future Enhancements
 - Camera API integration for real image capture
