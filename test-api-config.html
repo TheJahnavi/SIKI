@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration Test</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #00BCD4;
+            margin-bottom: 30px;
+        }
+        .config-info {
+            background-color: #f0f8ff;
+            border-left: 4px solid #00BCD4;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .error {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .instructions {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .step {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .step:before {
+            content: "•";
+            margin-right: 10px;
+        }
+        button {
+            background-color: #00BCD4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0097A7;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #output {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .note {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SIKI API Configuration Test</h1>
+            <p>Verify that your API configuration is set up correctly</p>
+        </div>
+        
+        <div class="config-info">
+            <h3>Current Configuration</h3>
+            <p>This tool will check if your API configuration is properly set up.</p>
+            <p><strong>Important:</strong> For the app to work properly, you need to:</p>
+            <div class="step">1. Deploy the backend server to a cloud platform</div>
+            <div class="step">2. Update the configuration with your deployed backend URL</div>
+            <div class="step">3. Set the required environment variables</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>Deployment Instructions</h3>
+            <p>To fix the 404 error you're seeing:</p>
+            <div class="step">Deploy the backend using one of these platforms:</div>
+            <div class="step">Render (recommended): <a href="https://render.com/" target="_blank">https://render.com/</a></div>
+            <div class="step">Heroku: <a href="https://heroku.com/" target="_blank">https://heroku.com/</a></div>
+            <div class="step">Google Cloud Run: <a href="https://cloud.google.com/run" target="_blank">https://cloud.google.com/run</a></div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button id="testConfig">Test Configuration</button>
+            <button id="checkEndpoints" disabled>Check API Endpoints</button>
+        </div>
+        
+        <div id="output">Click "Test Configuration" to begin.</div>
+        
+        <div class="note">
+            Note: This test only verifies the frontend configuration. To fully test the API endpoints,
+            you need to have the backend deployed and running.
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the configuration
+        import config from './scripts/config.js';
+        
+        const testConfigButton = document.getElementById('testConfig');
+        const checkEndpointsButton = document.getElementById('checkEndpoints');
+        const output = document.getElementById('output');
+        
+        // Function to test configuration
+        function testConfig() {
+            output.innerHTML = 'Testing configuration...\n\n';
+            
+            try {
+                // Log the current environment
+                output.innerHTML += `Current environment: ${process.env.NODE_ENV || 'development'}\n\n`;
+                
+                // Log the configuration
+                output.innerHTML += `Configuration:\n${JSON.stringify(config, null, 2)}\n\n`;
+                
+                // Test API URL
+                output.innerHTML += `API Base URL: ${config.apiUrl}\n\n`;
+                
+                // Check if API URL is properly set
+                if (config.apiUrl === '' || config.apiUrl.includes('your-deployed-backend-url')) {
+                    output.innerHTML += '⚠️ WARNING: API URL is not properly configured!\n';
+                    output.innerHTML += 'You need to deploy the backend and update the configuration.\n\n';
+                    output.className = 'error';
+                } else {
+                    output.innerHTML += '✅ API URL appears to be configured correctly.\n\n';
+                    output.className = 'success';
+                    checkEndpointsButton.disabled = false;
+                }
+                
+                // Test debug mode
+                output.innerHTML += `Debug mode: ${config.debug}\n\n`;
+                
+                // Test Firebase settings
+                output.innerHTML += `Firebase settings: ${JSON.stringify(config.firebase, null, 2)}\n\n`;
+                
+                output.innerHTML += 'Configuration test completed!\n';
+                output.innerHTML += 'Next steps:\n';
+                output.innerHTML += '1. If API URL is not configured, deploy the backend\n';
+                output.innerHTML += '2. Update scripts/config.js with your deployed backend URL\n';
+                output.innerHTML += '3. Rebuild and redeploy the frontend\n';
+            } catch (error) {
+                output.innerHTML = `Error testing configuration: ${error.message}\n${error.stack}`;
+                output.className = 'error';
+            }
+        }
+        
+        // Function to check API endpoints (this will only work if backend is deployed)
+        async function checkEndpoints() {
+            output.innerHTML = 'Checking API endpoints...\n\n';
+            output.className = '';
+            
+            if (!config.apiUrl || config.apiUrl.includes('your-deployed-backend-url')) {
+                output.innerHTML += '❌ Cannot check endpoints: API URL is not properly configured.\n';
+                output.innerHTML += 'Please deploy the backend and update the configuration first.\n';
+                output.className = 'error';
+                return;
+            }
+            
+            const endpoints = [
+                '/api/analyze-product',
+                '/api/chat',
+                '/api/history'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    output.innerHTML += `Checking ${endpoint}... `;
+                    
+                    // For POST endpoints, we'll just check if we get a response (not 404)
+                    const method = endpoint.includes('analyze') || endpoint.includes('chat') || endpoint.includes('store') ? 'POST' : 'GET';
+                    
+                    const response = await fetch(`${config.apiUrl}${endpoint}`, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.status !== 404) {
+                        output.innerHTML += `✅ OK (${response.status})\n`;
+                    } else {
+                        output.innerHTML += `❌ NOT FOUND (${response.status})\n`;
+                    }
+                } catch (error) {
+                    output.innerHTML += `❌ ERROR: ${error.message}\n`;
+                }
+            }
+            
+            output.innerHTML += '\nEndpoint check completed!\n';
+            output.innerHTML += 'If you see 404 errors, make sure your backend is deployed and running.\n';
+        }
+        
+        // Event listeners
+        testConfigButton.addEventListener('click', testConfig);
+        checkEndpointsButton.addEventListener('click', checkEndpoints);
+        
+        // Make functions available globally for debugging
+        window.testConfig = testConfig;
+        window.checkEndpoints = checkEndpoints;
+    </script>
+</body>
+</html>

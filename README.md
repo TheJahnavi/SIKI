@@ -1,5 +1,7 @@
 # SIKI - Scan It Know It
 
+![CI Status](https://github.com/TheJahnavi/SIKI/actions/workflows/ci.yml/badge.svg)
+
 A mobile-first web application for scanning and analyzing product images to provide health assessments.
 
 > **Important Security Notice**: This repository contains placeholder files for sensitive credentials. Never commit actual credentials to version control. See the [Security Considerations](#security-considerations) section for details on proper credential management.
@@ -67,12 +69,12 @@ SIKI is a responsive web application built with Material Design 3 principles tha
 ```
 SIKI/
 ├── index.html
-├── server.js
+├── server.cjs
 ├── manifest.json
 ├── sw.js
 ├── .env
 ├── .babelrc
-├── jest.config.js
+├── jest.config.cjs
 ├── config/
 │   └── firebase-service-account.json
 ├── firebase.rules
@@ -91,10 +93,12 @@ SIKI/
 ├── docs/
 │   ├── ai-ml-pipeline-specification.md
 │   ├── backend-deployment-guide.md
+│   ├── cicd-setup-guide.md
 │   ├── complete-integration-summary.md
 │   ├── deployment-guide.md
 │   ├── enhanced-features-summary.md
 │   ├── enhancement-summary.md
+│   ├── eslint-setup.md
 │   ├── fallback-modal-implementation.md
 │   ├── fallback-modal-summary.md
 │   ├── firebase-integration-summary.md
@@ -106,6 +110,7 @@ SIKI/
 │   ├── next-steps-for-contextual-ai.md
 │   ├── project-structure.md
 │   ├── real-time-updates.md
+│   ├── simple-cicd-setup.md
 │   ├── test-product-label.txt
 │   ├── testing-fallback-modal.md
 │   └── user-preferences-feature.md
@@ -331,14 +336,60 @@ To modify the application:
 1. Edit `index.html` for structure changes
 2. Modify files in `styles/` for styling updates
 3. Update `scripts/main.js` for frontend functionality changes
-4. Update `server.js` for backend API changes
+4. Update `server.cjs` for backend API changes
 
 ## Testing
 
-Run tests with:
+### Unit Tests
+Run unit tests with:
 ```bash
 npm test
 ```
+
+### End-to-End Tests
+Run all end-to-end tests with:
+```bash
+npm run test:e2e
+```
+
+Open Cypress test runner with:
+```bash
+npm run test:e2e:open
+```
+
+### Cypress Flow Tests
+The project includes comprehensive Cypress flow tests for key user journeys:
+- Scan flow tests
+- Fallback flow tests
+- Chat response tests
+- Offline mode tests
+
+Run specific flow tests:
+```bash
+# Run only scan flow tests
+npx cypress run --spec "tests/e2e/flows/scan-flow.test.js"
+
+# Run only fallback flow tests
+npx cypress run --spec "tests/e2e/flows/fallback-flow.test.js"
+
+# Run only chat response tests
+npx cypress run --spec "tests/e2e/flows/chat-response.test.js"
+
+# Run only offline mode tests
+npx cypress run --spec "tests/e2e/flows/offline-mode.test.js"
+```
+
+For detailed information about the Cypress flow tests, see [Cypress Flow Tests Documentation](docs/cypress-flow-tests.md).
+
+## Code Quality
+
+### ESLint
+The project uses ESLint for code quality checks:
+```bash
+npm run lint
+```
+
+For detailed ESLint setup information, see [ESLint Setup Guide](docs/eslint-setup.md).
 
 ## Deployment
 
@@ -382,11 +433,27 @@ After deploying both the backend and frontend, make sure to:
 
 For detailed instructions, see [Backend Deployment Guide](docs/backend-deployment-guide.md).
 
+### Continuous Integration/Continuous Deployment (CI/CD)
+
+The repository includes GitHub Actions workflows for automatic testing:
+
+1. **CI Workflow**: Automatically runs tests on every push to main branch and pull requests
+2. **Netlify Configuration**: Automatic deployment to Netlify
+3. **Render Configuration**: Automatic deployment to Render
+
+#### Setup Instructions:
+1. Configure environment variables in Netlify and Render (no GitHub Secrets needed)
+2. Push to the main branch to trigger automatic deployment
+
+For detailed CI/CD setup instructions, see:
+- [Simple CI/CD Setup](docs/simple-cicd-setup.md) (recommended)
+- [Full CI/CD Setup Guide](docs/cicd-setup-guide.md)
+
 ### Deployment Options
 - **GitHub Pages**: Use `npm run deploy` for static deployment
 - **Firebase Hosting**: Use Firebase CLI for unified deployment
 - **Vercel/Netlify**: Connect repository for automatic deployments
-- **Traditional Hosting**: Deploy server.js with Node.js
+- **Traditional Hosting**: Deploy server.cjs with Node.js
 
 ## Performance Optimization
 
@@ -458,6 +525,7 @@ The application includes comprehensive documentation to support development, tes
 - **Bug Reporting**: Use the [Bug Report Template](docs/bug-report-template.md)
 - **Unit Tests**: Run with `npm test`
 - **End-to-End Tests**: Run with `npm run test:e2e`
+- **Cypress Flow Tests**: See [Cypress Flow Tests Documentation](docs/cypress-flow-tests.md)
 
 ### User Experience Documentation
 - **Accessibility Testing**: [Accessibility Testing Guide](docs/accessibility-testing-guide.md)
@@ -477,6 +545,13 @@ The application includes comprehensive documentation to support development, tes
 
 ### Backend Deployment
 - **Deployment Guide**: [Backend Deployment Guide](docs/backend-deployment-guide.md)
+
+### CI/CD Setup
+- **Simple Setup**: [Simple CI/CD Setup](docs/simple-cicd-setup.md)
+- **Full Setup**: [CI/CD Setup Guide](docs/cicd-setup-guide.md)
+
+### Code Quality
+- **ESLint Setup**: [ESLint Setup Guide](docs/eslint-setup.md)
 
 Refer to [Testing Documentation](docs/testing-readme.md) for more details.
 

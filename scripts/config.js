@@ -20,7 +20,8 @@ const config = {
   
   // Production environment (deployed app)
   production: {
-    // API base URL - replace with your actual deployed backend URL
+    // API base URL - REPLACE WITH YOUR ACTUAL DEPLOYED BACKEND URL
+    // Example: 'https://your-app-name.onrender.com' or 'https://your-app.herokuapp.com'
     apiUrl: 'https://your-deployed-backend-url.com',
     // Debug mode - disabled in production
     debug: false,
@@ -33,7 +34,7 @@ const config = {
   
   // Staging environment (if needed)
   staging: {
-    // API base URL - replace with your staging backend URL
+    // API base URL - REPLACE WITH YOUR ACTUAL STAGING BACKEND URL
     apiUrl: 'https://staging-your-app.com',
     // Debug mode - enabled in staging for testing
     debug: true,
