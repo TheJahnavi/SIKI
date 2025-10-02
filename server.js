@@ -5,6 +5,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const compression = require('compression'); // Add compression middleware
 const Tesseract = require('tesseract.js');
 const { HfInference } = require('@huggingface/inference');
 
@@ -40,6 +41,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(compression()); // Add compression for better performance
 app.use(cors());
 app.use(express.json());
 app.use(express.static('dist')); // Serve static files from dist folder

@@ -13,6 +13,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Performance monitoring
+if ('performance' in window) {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const perfData = performance.getEntriesByType('navigation')[0];
+      console.log('Page Load Time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+      console.log('DOM Content Loaded Time:', perfData.domContentLoadedEventEnd - perfData.fetchStart, 'ms');
+    }, 0);
+  });
+}
+
 // DOM Elements
 const homePage = document.getElementById('home-page');
 const resultPage = document.getElementById('result-page');
