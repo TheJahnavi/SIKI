@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Camera Test</h1>
+    <video id="video" autoplay playsinline></video>
+    <br>
+    <button id="start">Start Camera</button>
+    <button id="stop">Stop Camera</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        let stream = null;
+
+        startButton.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Camera access failed: ' + err.message);
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        });
+    </script>
+</body>
+</html>

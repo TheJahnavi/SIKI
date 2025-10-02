@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #f0f0f0;
+            border: 2px dashed #ccc;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #camera-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        #camera-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            z-index: 10;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Camera Test</h1>
+    
+    <div class="camera-container">
+        <video id="camera-stream" autoplay playsinline></video>
+        <div id="camera-placeholder">
+            <h3>Camera Access Required</h3>
+            <p>Point your camera at a product</p>
+            <p>Allow camera access when prompted</p>
+            <button id="start-camera">Start Camera</button>
+        </div>
+    </div>
+    
+    <div>
+        <button id="test-camera">Test Camera Access</button>
+        <button id="stop-camera">Stop Camera</button>
+    </div>
+    
+    <h2>Log</h2>
+    <div id="log"></div>
+
+    <script>
+        const cameraStream = document.getElementById('camera-stream');
+        const cameraPlaceholder = document.getElementById('camera-placeholder');
+        const startCameraBtn = document.getElementById('start-camera');
+        const testCameraBtn = document.getElementById('test-camera');
+        const stopCameraBtn = document.getElementById('stop-camera');
+        const logDiv = document.getElementById('log');
+        let mediaStream = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.className = type;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        // Check if we're in a secure context
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            log('WARNING: Not in secure context. Camera may not work.', 'error');
+        } else {
+            log('In secure context - camera should work', 'success');
+        }
+        
+        startCameraBtn.addEventListener('click', startCamera);
+        testCameraBtn.addEventListener('click', testCameraAccess);
+        stopCameraBtn.addEventListener('click', stopCamera);
+        
+        async function startCamera() {
+            log('Attempting to start camera...');
+            
+            try {
+                // Stop any existing stream
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                log('Requesting camera access...');
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                log('Camera stream obtained successfully', 'success');
+                cameraStream.srcObject = mediaStream;
+                
+                // Show camera stream and hide placeholder
+                cameraStream.style.display = 'block';
+                cameraPlaceholder.style.display = 'none';
+                
+                log('Camera started successfully', 'success');
+            } catch (err) {
+                log(`Camera error: ${err.message}`, 'error');
+                showCameraError(err);
+            }
+        }
+        
+        function showCameraError(error) {
+            cameraPlaceholder.innerHTML = `
+                <h3>Camera Access Failed</h3>
+                <p>${error.message || 'Please check your camera permissions'}</p>
+                <button id="retry-camera">Retry</button>
+            `;
+            
+            // Add event listener to the retry button
+            const retryBtn = document.getElementById('retry-camera');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', startCamera);
+            }
+        }
+        
+        async function testCameraAccess() {
+            log('Testing camera access...');
+            
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                log('enumerateDevices API not available', 'error');
+                return;
+            }
+            
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                log(`Found ${videoDevices.length} video devices`, 'info');
+                
+                if (videoDevices.length > 0) {
+                    videoDevices.forEach((device, index) => {
+                        log(`Device ${index + 1}: ${device.label || `Camera ${index + 1}`}`, 'info');
+                    });
+                    log('Camera devices available', 'success');
+                } else {
+                    log('No video devices found', 'error');
+                }
+            } catch (err) {
+                log(`Error enumerating devices: ${err.message}`, 'error');
+            }
+        }
+        
+        function stopCamera() {
+            log('Stopping camera...');
+            
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => {
+                    track.stop();
+                    log(`Stopped track: ${track.kind}`, 'info');
+                });
+                mediaStream = null;
+            }
+            
+            cameraStream.srcObject = null;
+            cameraPlaceholder.style.display = 'flex';
+            cameraStream.style.display = 'none';
+            
+            log('Camera stopped', 'success');
+        }
+    </script>
+</body>
+</html>

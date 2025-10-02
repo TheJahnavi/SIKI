@@ -1,0 +1,17 @@
+{
+  "name": "Organic Almond Butter",
+  "brand": "NutriPure",
+  "imageUrl": "https://images.unsplash.com/photo-1603569283847-aa40b67a50d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+  "healthScore": 85,
+  "healthLabel": "Excellent",
+  "ingredients": [
+    "Almonds",
+    "Palm Oil",
+    "Sea Salt"
+  ],
+  "tags": [
+    "Vegan",
+    "Gluten-Free",
+    "Organic"
+  ]
+}

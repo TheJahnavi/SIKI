@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIKI Application Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #camera-test {
+            width: 100%;
+            height: 300px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        #camera-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <h1>SIKI Application Comprehensive Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Element Verification Test</h2>
+        <button onclick="testElements()">Run Element Test</button>
+        <div id="element-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Camera Functionality Test</h2>
+        <button onclick="testCamera()">Run Camera Test</button>
+        <div id="camera-test">
+            <video id="camera-stream" autoplay playsinline style="display: none;"></video>
+            <div id="camera-placeholder">Camera Test Area</div>
+        </div>
+        <div id="camera-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. API Connectivity Test</h2>
+        <button onclick="testAPI()">Run API Test</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Service Worker Test</h2>
+        <button onclick="testServiceWorker()">Run Service Worker Test</button>
+        <div id="sw-results"></div>
+    </div>
+    
+    <script>
+        // Test 1: Element Verification
+        function testElements() {
+            const resultsDiv = document.getElementById('element-results');
+            resultsDiv.innerHTML = '<p>Running element verification test...</p>';
+            
+            const requiredElements = [
+                'camera-stream',
+                'camera-placeholder'
+            ];
+            
+            let passCount = 0;
+            let failCount = 0;
+            let resultsHTML = '';
+            
+            requiredElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    resultsHTML += `<div class="test-result pass">✓ Element found: ${elementId}</div>`;
+                    passCount++;
+                } else {
+                    resultsHTML += `<div class="test-result fail">✗ Element missing: ${elementId}</div>`;
+                    failCount++;
+                }
+            });
+            
+            resultsHTML += `<div class="test-result info">Summary: ${passCount} passed, ${failCount} failed</div>`;
+            resultsDiv.innerHTML = resultsHTML;
+        }
+        
+        // Test 2: Camera Functionality
+        function testCamera() {
+            const resultsDiv = document.getElementById('camera-results');
+            resultsDiv.innerHTML = '<p>Testing camera functionality...</p>';
+            
+            const cameraStream = document.getElementById('camera-stream');
+            const cameraPlaceholder = document.getElementById('camera-placeholder');
+            
+            if (!cameraStream) {
+                resultsDiv.innerHTML += '<div class="test-result fail">✗ Camera stream element not found</div>';
+                return;
+            }
+            
+            // Try to access camera
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        cameraStream.srcObject = stream;
+                        cameraStream.style.display = 'block';
+                        if (cameraPlaceholder) {
+                            cameraPlaceholder.style.display = 'none';
+                        }
+                        resultsDiv.innerHTML += '<div class="test-result pass">✓ Camera access granted</div>';
+                        resultsDiv.innerHTML += '<div class="test-result pass">✓ Camera stream displayed</div>';
+                    })
+                    .catch(err => {
+                        resultsDiv.innerHTML += `<div class="test-result fail">✗ Camera access denied: ${err.message}</div>`;
+                        resultsDiv.innerHTML += '<div class="test-result info">Tip: Check browser permissions for this site</div>';
+                    });
+            } else {
+                resultsDiv.innerHTML += '<div class="test-result fail">✗ MediaDevices API not supported</div>';
+                resultsDiv.innerHTML += '<div class="test-result info">Tip: This browser does not support camera access</div>';
+            }
+        }
+        
+        // Test 3: API Connectivity
+        function testAPI() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<p>Testing API connectivity...</p>';
+            
+            // Test ingredients API
+            fetch('http://localhost:3000/api/ingredients')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        resultsDiv.innerHTML += '<div class="test-result pass">✓ Ingredients API accessible</div>';
+                        resultsDiv.innerHTML += `<div class="test-result info">Found ${data.ingredients.length} ingredients</div>`;
+                    } else {
+                        resultsDiv.innerHTML += '<div class="test-result fail">✗ Ingredients API returned error</div>';
+                    }
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML += `<div class="test-result fail">✗ Ingredients API connection failed: ${err.message}</div>`;
+                    resultsDiv.innerHTML += '<div class="test-result info">Tip: Make sure the server is running on port 3000</div>';
+                });
+        }
+        
+        // Test 4: Service Worker
+        function testServiceWorker() {
+            const resultsDiv = document.getElementById('sw-results');
+            resultsDiv.innerHTML = '<p>Testing service worker...</p>';
+            
+            if ('serviceWorker' in navigator) {
+                resultsDiv.innerHTML += '<div class="test-result pass">✓ Service Worker API supported</div>';
+                
+                // Try to register service worker
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        resultsDiv.innerHTML += '<div class="test-result pass">✓ Service Worker registered</div>';
+                        resultsDiv.innerHTML += `<div class="test-result info">Scope: ${registration.scope}</div>`;
+                    })
+                    .catch(err => {
+                        resultsDiv.innerHTML += `<div class="test-result fail">✗ Service Worker registration failed: ${err.message}</div>`;
+                    });
+            } else {
+                resultsDiv.innerHTML += '<div class="test-result fail">✗ Service Worker API not supported</div>';
+            }
+        }
+        
+        // Run all tests on page load
+        window.addEventListener('load', () => {
+            console.log('SIKI Test Page Loaded');
+        });
+    </script>
+</body>
+</html>

@@ -1,296 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SIKI - Scan product images to get instant health assessments">
-    <meta name="theme-color" content="#00BCD4">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
-    <title>SIKI - Scan It Know It</title>
-    <link rel="stylesheet" href="styles/reset.css">
-    <link rel="stylesheet" href="styles/animations.css">
-    <link rel="stylesheet" href="styles/utilities.css">
-    <link rel="stylesheet" href="styles/print.css">
-    <link rel="stylesheet" href="styles/dark-mode.css">
-    <link rel="stylesheet" href="styles/mobile.css">
-    <link rel="stylesheet" href="styles/accessibility.css">
-    <link rel="stylesheet" href="styles/components.css">
-    <link rel="stylesheet" href="styles/grid.css">
-    <link rel="stylesheet" href="styles/typography.css">
-    <link rel="stylesheet" href="styles/forms.css">
-    <link rel="stylesheet" href="styles/navigation.css">
-    <link rel="stylesheet" href="styles/modal.css">
-    <link rel="stylesheet" href="styles/loading.css">
-    <link rel="stylesheet" href="styles/notifications.css">
-    <link rel="stylesheet" href="styles/cards.css">
-    <link rel="stylesheet" href="styles/tables.css">
-    <link rel="stylesheet" href="styles/charts.css">
-    <link rel="stylesheet" href="styles/progress.css">
-    <link rel="stylesheet" href="styles/badges.css">
-    <link rel="stylesheet" href="styles/avatars.css">
-    <link rel="stylesheet" href="styles/tooltips.css">
-    <link rel="stylesheet" href="styles/accordions.css">
-    <link rel="stylesheet" href="styles/breadcrumbs.css">
-    <link rel="stylesheet" href="styles/pagination.css">
-    <link rel="stylesheet" href="styles/tabs.css">
-    <link rel="stylesheet" href="styles/sliders.css">
-    <link rel="stylesheet" href="styles/switches.css">
-    <link rel="stylesheet" href="styles/ratings.css">
-    <link rel="stylesheet" href="styles/preferences.css">
-    <link rel="stylesheet" href="styles/main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan It Know It</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Roboto Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
-        <!-- Page 1: Home Screen -->
-        <div id="home-page" class="page active">
-            <!-- Header Overlay -->
-            <div class="header-overlay">
-                <div class="logo">Scan It Know It</div>
-                <div class="header-actions">
-                    <button id="theme-toggle" class="icon-button">
-                        <span class="material-icons">light_mode</span>
-                    </button>
-                    <button id="preferences-button" class="icon-button">
-                        <span class="material-icons">settings</span>
-                    </button>
-                    <button id="camera-switch" class="icon-button">
-                        <span class="material-icons">flip_camera_ios</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Camera Viewport -->
-            <div class="camera-viewport">
-                <div class="scanning-line"></div>
-                <!-- Hidden video element for camera stream -->
-                <video id="camera-stream" autoplay playsinline style="display: none;"></video>
-                <!-- Hidden canvas for image capture -->
-                <canvas id="capture-canvas" style="display: none;"></canvas>
-                <div class="camera-placeholder">
-                    <span class="material-icons">photo_camera</span>
-                    <p>Point your camera at a product</p>
-                    <p class="camera-instruction">Allow camera access when prompted</p>
-                </div>
-            </div>
-            
-            <!-- Image Preview Bar (Hidden by default) -->
-            <div id="image-preview-bar" class="image-preview-bar">
-                <div class="preview-container">
-                    <!-- Thumbnails will be added here dynamically -->
-                </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
-                <button id="gallery-button" class="icon-button fab-style">
-                    <span class="material-icons">photo_library</span>
-                </button>
-                <button id="camera-button" class="large-fab">
-                    <span class="material-icons">photo_camera</span>
-                </button>
-                <button id="analyze-button" class="extended-fab disabled">
-                    <span>ANALYZE</span>
-                    <span class="material-icons">send</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Page 2: Product Result Screen -->
-        <div id="result-page" class="page">
-            <!-- Top App Bar -->
-            <div class="top-app-bar">
-                <button id="back-button" class="icon-button">
-                    <span class="material-icons">arrow_back</span>
-                </button>
-                <div class="app-bar-title">Product Name</div>
-            </div>
-            
-            <!-- Score Visualization -->
-            <div class="score-visualization">
-                <h1 class="product-name">Organic Coconut Water</h1>
-                <p class="assessment-text">Overall Health Assessment: Good</p>
-            </div>
-            
-            <!-- Alternatives CTA -->
-            <div class="alternatives-cta">
-                <button class="tonal-button">
-                    <span>See Healthier Alternatives</span>
-                </button>
-            </div>
-            
-            <!-- Detail Sections -->
-            <div class="detail-sections">
-                <!-- Ingredients & Risk Analysis -->
-                <div class="expansion-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">Ingredients & Risk Analysis</div>
-                        <div class="source-badge">AI Analysis</div>
-                        <span class="material-icons expand-icon">expand_more</span>
-                    </div>
-                    <div class="panel-content">
-                        <ul class="ingredients-list">
-                            <li>Coconut Water <span class="safe">- Safe</span></li>
-                            <li>Natural Flavors <span class="caution">- Caution</span></li>
-                            <li>Vitamin C <span class="safe">- Safe</span></li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- Nutritional Breakdown -->
-                <div class="expansion-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">Nutritional Breakdown</div>
-                        <div class="source-badge">Web Scrape</div>
-                        <span class="material-icons expand-icon">expand_more</span>
-                    </div>
-                    <div class="panel-content">
-                        <div class="nutrition-item">
-                            <span class="nutrition-label">Calories</span>
-                            <span class="nutrition-value">46</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill success" style="width: 23%"></div>
-                            </div>
-                        </div>
-                        <div class="nutrition-item">
-                            <span class="nutrition-label">Sugar</span>
-                            <span class="nutrition-value">9g</span>
-                            <div class="progress-bar">
-                                <div class="progress-fill warning" style="width: 60%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Reddit Reviews -->
-                <div class="expansion-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">Reddit Reviews</div>
-                        <div class="source-badge">Web Scrape</div>
-                        <span class="material-icons expand-icon">expand_more</span>
-                    </div>
-                    <div class="panel-content">
-                        <h3 class="pros-heading">Pros</h3>
-                        <ul>
-                            <li>Great taste, refreshing</li>
-                            <li>Natural electrolytes</li>
-                        </ul>
-                        <h3 class="cons-heading">Cons</h3>
-                        <ul>
-                            <li>Pricey compared to other brands</li>
-                            <li>Packaging not eco-friendly</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- Q&A (Ask the AI) -->
-                <div class="expansion-panel">
-                    <div class="panel-header">
-                        <div class="panel-title">Q&A (Ask the AI)</div>
-                        <div class="source-badge">AI Analysis</div>
-                        <span class="material-icons expand-icon">expand_more</span>
-                    </div>
-                    <div class="panel-content">
-                        <div class="chat-bubble">
-                            <p>Hello! I'm your product analysis assistant. Ask me anything about this product.</p>
-                        </div>
-                        <div class="qa-input-area">
-                            <div class="input-chips">
-                                <button class="chip">Is it organic?</button>
-                                <button class="chip">Sugar content?</button>
-                                <button class="chip">Keto-friendly?</button>
-                            </div>
-                            <div class="text-field-container">
-                                <input type="text" class="outlined-text-field" placeholder="Ask a question...">
-                                <button class="send-button">
-                                    <span class="material-icons">send</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- User Preferences Modal -->
-        <div id="preferences-modal" class="preferences-modal">
-            <div class="preferences-content">
-                <div class="preferences-header">
-                    <h2 class="preferences-title">Dietary Preferences</h2>
-                    <button class="close-preferences">
-                        <span class="material-icons">close</span>
-                    </button>
-                </div>
-                <div class="preferences-body">
-                    <div class="preference-section">
-                        <h3 class="preference-section-title">Dietary Restrictions</h3>
-                        <div class="preference-group">
-                            <button class="preference-chip" data-preference="vegan">Vegan</button>
-                            <button class="preference-chip" data-preference="vegetarian">Vegetarian</button>
-                            <button class="preference-chip" data-preference="gluten-free">Gluten-Free</button>
-                            <button class="preference-chip" data-preference="dairy-free">Dairy-Free</button>
-                            <button class="preference-chip" data-preference="keto">Keto</button>
-                            <button class="preference-chip" data-preference="paleo">Paleo</button>
-                        </div>
-                    </div>
-                    
-                    <div class="preference-section">
-                        <h3 class="preference-section-title">Allergies</h3>
-                        <div class="preference-group">
-                            <button class="preference-chip" data-preference="nuts">Tree Nuts</button>
-                            <button class="preference-chip" data-preference="peanuts">Peanuts</button>
-                            <button class="preference-chip" data-preference="shellfish">Shellfish</button>
-                            <button class="preference-chip" data-preference="soy">Soy</button>
-                            <button class="preference-chip" data-preference="eggs">Eggs</button>
-                            <button class="preference-chip" data-preference="milk">Milk</button>
-                        </div>
-                    </div>
-                    
-                    <div class="preference-section">
-                        <h3 class="preference-section-title">Health Goals</h3>
-                        <div class="preference-group">
-                            <button class="preference-chip" data-preference="low-sugar">Low Sugar</button>
-                            <button class="preference-chip" data-preference="high-protein">High Protein</button>
-                            <button class="preference-chip" data-preference="low-calorie">Low Calorie</button>
-                            <button class="preference-chip" data-preference="heart-healthy">Heart Healthy</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="preferences-footer">
-                    <button class="preferences-button cancel-button">Cancel</button>
-                    <button class="preferences-button save-button">Save Preferences</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Fallback Message Modal -->
-        <div id="fallbackModal" class="modal hidden">
-            <div class="modal-content">
-                <h2>Oops! Something went wrong</h2>
-                <p>We couldn't analyze this item. Try scanning a clearer image or select a product manually.</p>
-                <div class="modal-actions">
-                    <button id="retryButton" class="modal-button primary">Retry</button>
-                    <button id="closeFallbackModal" class="modal-button secondary">OK</button>
-                </div>
-            </div>
-        </div>
+  <!-- Page 1: Home Screen -->
+  <div id="page-1" class="page active">
+    <!-- Header Overlay -->
+    <div class="header-overlay">
+      <h1 class="logo">Scan It Know It</h1>
+      <button id="theme-toggle" class="icon-button">
+        <span class="material-icons">light_mode</span>
+      </button>
+      <button id="camera-switch" class="icon-button">
+        <span class="material-icons">flip_camera_ios</span>
+      </button>
     </div>
-    
-    <script>
-        // Handle routing before loading the main app
-        (function() {
-            // Check if we're trying to access the result page directly
-            if (window.location.hash === '#/result') {
-                // If accessing result page directly, redirect to home
-                // In a real app, you might want to restore state from localStorage or show an error
-                window.location.hash = '';
-            }
-        })();
-    </script>
-    <script src="scripts/main.js" type="module"></script>
+
+    <!-- Camera Viewport -->
+    <div class="camera-viewport">
+      <video id="camera-stream" autoplay playsinline></video>
+      <canvas id="capture-canvas" style="display:none;"></canvas>
+      <div class="scanning-indicator"></div>
+      <div class="camera-placeholder">
+        <span class="material-icons">photo_camera</span>
+        <p>Camera Access Required</p>
+        <p class="camera-instruction">Point your camera at a product. Allow camera access when prompted.</p>
+      </div>
+    </div>
+
+    <!-- Image Preview Bar (Conditional) -->
+    <div id="image-preview-bar" class="image-preview-bar">
+      <div class="preview-container"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button id="upload-button" class="icon-button fab-style">
+        <span class="material-icons">photo_library</span>
+      </button>
+      <button id="camera-button" class="large-fab">
+        <span class="material-icons">photo_camera</span>
+      </button>
+      <button id="analyze-button" class="extended-fab disabled">
+        <span>ANALYZE</span>
+        <span class="material-icons">send</span>
+      </button>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="upload-input" accept="image/*" style="display:none;" />
+  </div>
+
+  <!-- Page 2: Product Result Screen -->
+  <div id="page-2" class="page">
+    <!-- Top App Bar -->
+    <div class="top-app-bar">
+      <button id="back-button" class="icon-button">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <h2 id="product-name" class="app-bar-title">Product Name</h2>
+    </div>
+
+    <!-- Score Visualization -->
+    <div class="score-visualization">
+      <h1 id="product-name-result" class="product-name">Product Name</h1>
+      <p id="assessment-text" class="assessment-text">Overall Health Assessment: Loading...</p>
+    </div>
+
+    <!-- Alternatives CTA -->
+    <button class="alternatives-cta">
+      <span>See Healthier Alternatives</span>
+    </button>
+
+    <!-- Detail Sections -->
+    <div class="detail-sections">
+      <!-- Ingredients & Risk Analysis -->
+      <div class="expansion-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Ingredients & Risk Analysis</h3>
+          <span class="source-badge">AI Analysis</span>
+          <span class="material-icons expand-icon">expand_more</span>
+        </div>
+        <div class="panel-content">
+          <ul class="ingredients-list"></ul>
+        </div>
+      </div>
+
+      <!-- Nutritional Breakdown -->
+      <div class="expansion-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Nutritional Breakdown</h3>
+          <span class="source-badge">Web Scrape</span>
+          <span class="material-icons expand-icon">expand_more</span>
+        </div>
+        <div class="panel-content">
+          <!-- Nutrition items will be added here dynamically -->
+        </div>
+      </div>
+
+      <!-- Reddit Reviews -->
+      <div class="expansion-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Reddit Reviews</h3>
+          <span class="source-badge">Web Scrape</span>
+          <span class="material-icons expand-icon">expand_more</span>
+        </div>
+        <div class="panel-content">
+          <h4 class="pros-heading">Pros</h4>
+          <ul class="pros-list">
+            <li>High quality ingredients</li>
+            <li>Good value for money</li>
+          </ul>
+          <h4 class="cons-heading">Cons</h4>
+          <ul class="cons-list">
+            <li>Contains artificial preservatives</li>
+            <li>High in sugar</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Q&A (Ask the AI) -->
+      <div class="expansion-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Q&A (Ask the AI)</h3>
+          <span class="source-badge">AI Analysis</span>
+          <span class="material-icons expand-icon">expand_more</span>
+        </div>
+        <div class="panel-content">
+          <div class="chat-bubble">
+            <p>Hello! I'm your product analysis assistant. Ask me anything about this product!</p>
+          </div>
+          <!-- Chat bubbles will be added here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Q&A Input Area (Fixed to bottom when Q&A section is open) -->
+    <div class="qa-input-area">
+      <div class="input-container">
+        <input type="text" class="outlined-text-field" placeholder="Ask about this product..." />
+        <button class="icon-button send-button">
+          <span class="material-icons">send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/main.js"></script>
 </body>
 </html>

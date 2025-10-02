@@ -22,7 +22,7 @@ const config = {
   production: {
     // API base URL - REPLACE WITH YOUR ACTUAL DEPLOYED BACKEND URL
     // Example: 'https://your-app-name.onrender.com' or 'https://your-app.herokuapp.com'
-    apiUrl: 'https://siki-backend.onrender.com', // Updated to a more realistic placeholder
+    apiUrl: '', // Empty for relative paths, update when deploying
     // Debug mode - disabled in production
     debug: false,
     // Firebase settings
@@ -35,7 +35,7 @@ const config = {
   // Staging environment (if needed)
   staging: {
     // API base URL - REPLACE WITH YOUR ACTUAL STAGING BACKEND URL
-    apiUrl: 'https://staging-siki.onrender.com', // Updated to a more realistic placeholder
+    apiUrl: '', // Empty for relative paths, update when deploying
     // Debug mode - enabled in staging for testing
     debug: true,
     // Firebase settings
