@@ -41,3 +41,9 @@ config/firebase-service-account.json
 
 # Uploads directory
 uploads/
+
+# Test files that shouldn't be committed
+test-*.js
+
+# Fire base private key directory
+fire base private key/
